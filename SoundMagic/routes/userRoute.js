@@ -69,6 +69,10 @@ user_route.post('/removeProduct',userController.removeProduct)
 //Checkout
 
 user_route.get('/checkout',userController.loadCheckout)
+user_route.post('/placeOrder',userController.placeOrder)
+
+
+
 
 
 module.exports = user_route;

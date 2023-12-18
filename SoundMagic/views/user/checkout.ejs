@@ -28,7 +28,7 @@
           margin: 20px;
         }
         .address-section {
-          background-color: rgb(235, 234, 230);
+          background-color: rgb(243, 242, 238);
           padding: 10px;
           margin-top: 10px;
         }
@@ -153,7 +153,7 @@
                                     <% }else{ %>
                           <% address.forEach((address)=>{ %>
                             <div>
-                                <input class="form-check-input mt-3 custom-radio" type="radio" name="radioNoLabel" id="radioNoLabel1" value="" aria-label="...">
+                                <input class="form-check-input mt-3 custom-radio" type="radio" data-address-id="<%=address._id%>" name="addressRadio" id="radio" value="" aria-label="...">
                               </div>
                                 <div class="address-section">
                                 <div class="name and address d-flex">
@@ -217,12 +217,11 @@
                                 <div class="checkout__order__products"><b>Product</b><span><b>Total</b></span></div>
                                 <ul class="checkout__total__products">
                                     <% cart[0].items.forEach(product =>{ %>
-                                    <li><%= product.productId.productName %><span>100</span></li>
+                                    <li><%= product.productId.productName %><span>&#8377; <%= product.productId.offerPrice*product.quantity %></span></li>
                                     <% }); %>
                                 </ul>
                                 <ul class="checkout__total__all">
-                                    <li>Subtotal <span>$750.99</span></li>
-                                    <li>Total <span>$750.99</span></li>
+                                    <li id="subTotal">Subtotal <span>&#8377; <%= subtotal %></span></li>
                                 </ul>
                                 <p><b>Select your payment method</b></p>
                                 <div class="checkout__input__checkbox">
@@ -232,14 +231,7 @@
                                         <span class="checkmark"></span>
                                     </label>
                                 </div>
-                                <div class="checkout__input__checkbox">
-                                    <label for="paypal">
-                                        Netbanking
-                                        <input type="checkbox" id="paypal">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-                                <button type="submit" class="site-btn">PLACE ORDER</button>
+                                <button type="" class="site-btn" onclick="placeOrder('<%= subtotal %>')">PLACE ORDER</button>
                             </div>
                         </div>
                     </div>
@@ -397,13 +389,39 @@ console.log("done");
 ///////////////////////////////////DELETE ADDRESS///////////////////////////////////////////////////
 
 function deleteAddress(){
-    const productId = event.target.getAttribute('data-address-id')
+    const addressId = event.target.getAttribute('data-address-id')
     fetch('/deleteAddress',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({productId:productId})
+        body:JSON.stringify({addressId:addressId})
      })
 }
+///////////////PLACING ORDER//////////////////////////////////
+function placeOrder(subtotal){
+    const selectedRadio = document.querySelector('input[name="addressRadio"]:checked')
+    const codCheckBox = document.getElementById('payment')
+
+    if(selectedRadio){
+        const addressId = selectedRadio.dataset.addressId;
+        }
+
+        if(codCheckBox.checked){
+            const paymentMethod ="Cash on delivery";
+        }
+
+        fetch('/placeOrder',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({addressId:addressId,subtotal,paymentMethod})
+        })
+}
+
+
+
+
+
+
+
     </script>
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>

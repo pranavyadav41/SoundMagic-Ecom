@@ -400,9 +400,9 @@ const addAddress = async(req,res)=>{
 
 const deleteAddress =async(req,res)=>{
   try {
-   let productId = req.body.productId;
+   let Id = req.body.addressId;
 
-   const productDetail = await Address.findByIdAndDelete({_id:productId})
+   const productDetail = await Address.findByIdAndDelete({_id:Id})
 
   } catch (error) {
 
@@ -425,10 +425,15 @@ const loadCheckout = async(req,res)=>{
   try {
     const userid = req.session.userid;
     const cart = await Cart.find({userId:userid}).populate("items.productId")
-    console.log(cart);
+    ////CALCULATING SUBTOTAL////////////
+    let subtotal = 0;
+    cart[0].items.forEach(item=>{
+      subtotal +=item.productId.offerPrice * item.quantity
+    })
+    ////////////////////////////////////
     const address = await Address.find({userId:userid})
 
-    res.render('checkout',{address,cart})
+    res.render('checkout',{address,cart,subtotal})
     
   } catch (error) {
     console.log(error.message);
