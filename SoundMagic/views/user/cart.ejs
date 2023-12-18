@@ -22,13 +22,33 @@
     <link rel="stylesheet" href="css/owl.carousel.min.css" type="text/css">
     <link rel="stylesheet" href="css/slicknav.min.css" type="text/css">
     <link rel="stylesheet" href="css/style.css" type="text/css">
+    <style>
+        .quantity-control {
+    display: flex;
+    align-items: center;
+}
+
+.quantity-btn {
+    padding: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    
+}
+
+.quantity-input {
+    width: 40px;
+    text-align: center;
+    margin: 0 10px;
+}
+
+    </style>
 </head>
 
 <body>
     <!-- Page Preloder -->
-    <div id="preloder">
+    <!-- <div id="preloder">
         <div class="loader"></div>
-    </div>
+    </div> -->
 
     <!-- Offcanvas Menu Begin -->
     <div class="offcanvas-menu-overlay"></div>
@@ -65,8 +85,8 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-3 col-md-3">
-                    <div class="header__logo">
-                        <a href="./index.html"><img src="img/logo.png" alt=""></a>
+                    <div class="header__logo p-0 mt-4">
+                        <a href="./index.html"><img src="../assets/images/logos/download.png" width="180" alt="" /></a>
                     </div>
                 </div>
                 <div class="col-lg-6 col-md-6">
@@ -83,8 +103,8 @@
                     <div class="header__nav__option">
                         <a href="#" class="search-switch"><img src="img/icon/search.png" alt=""></a>
                         <a href="#"><img src="img/icon/heart.png" alt=""></a>
-                        <a href="#"><img src="img/icon/cart.png" alt=""></a>
-                        <a href="/user-profile"><img src="img/icon/user.png" alt=""></a> 
+                        <a href="/cart"><img src="img/icon/cart.png" alt=""></a>
+                        <a href="/user-profile"><img src="img/icon/user.png" alt=""></a>
                     </div>
                 </div>
             </div>
@@ -120,6 +140,9 @@
                     <div class="shopping__cart__table">
                         <table>
                             <thead>
+                                <% if (!cart || !cart.items || cart.items.length < 1) { %>
+                                    <h4 ><b>Oops! Your cart is empty.</b></h4>
+                                    <% }else{ %>
                                 <tr>
                                     <th>Product</th>
                                     <th>Quantity</th>
@@ -128,7 +151,9 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                <% var subtotal = 0; %>
                                 <% cart.items.forEach((product) => { %>
+                                   
                                 <tr>
                                     <td class="product__cart__item">
                                         <div class="product__cart__item__pic">
@@ -141,15 +166,22 @@
                                     </td>
                                     <td class="quantity__item">
                                         <div class="quantity">
-                                            <div class="pro-qty-2">
-                                                <input type="text" value="<%= product.quantity %>">
+                                            <div class="quantity-control">
+                                                <button class="quantity-btn" data-action="decrease" data-product-id="<%= product.productId._id %>">-</button>
+                                                <input class="quantity-input" type="text" value="<%= product.quantity %>" data-product-id="<%= product.productId._id %>" readonly>
+                                                <button class="quantity-btn" data-action="increase" data-product-id="<%= product.productId._id %>">+</button>
                                             </div>
+                                            
+                                            
                                         </div>
                                     </td>
                                     <td class="cart__price">&#8377;<%= product.productId.offerPrice*product.quantity %></td>
-                                    <td class="cart__close"><i class="fa fa-close"></i></td>
+                                    <td class="cart__close"><button type="button" class="btn btn-danger btn-sm" data-product-id="<%= product.productId._id %>" onclick="deleteCart()">Remove</button></td>
+                                    <% subtotal += product.productId.offerPrice * product.quantity; %>
                                 </tr>
                                 <% }); %>
+                                <% } %>
+                              
                                
                             </tbody>
                         </table>
@@ -157,7 +189,7 @@
                     <div class="row">
                         <div class="col-lg-6 col-md-6 col-sm-6">
                             <div class="continue__btn">
-                                <a href="#">Continue Shopping</a>
+                                <a href="/shop">Continue Shopping</a>
                             </div>
                         </div>
                     </div>
@@ -173,10 +205,9 @@
                     <div class="cart__total">
                         <h6>Cart total</h6>
                         <ul>
-                            <li>Subtotal <span>&#8377;<%= cart.totalPrice%></span></li>
-                            <li>Total <span>&#8377;<%= cart.totalPrice%></span></li>
-                        </ul>
-                        <a href="#" class="primary-btn">Proceed to checkout</a>
+                            <li>Subtotal <span>&#8377;<%= subtotal %></span></li>
+                         </ul>
+                       <a href="/checkout" class="primary-btn">Proceed to checkout</a>
                     </div>
                 </div>
             </div>
@@ -263,6 +294,70 @@
     <!-- Search End -->
 
     <!-- Js Plugins -->
+ <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('click', function (event) {
+        if (event.target.classList.contains('quantity-btn')) {
+            const action = event.target.getAttribute('data-action');
+            console.log(action);
+            const productId = event.target.getAttribute('data-product-id');
+            console.log(productId);
+
+            // Extract the unique identifier from productId
+            const productIdString = productId.toString()
+            console.log(productIdString);
+
+            const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productIdString}"]`);
+
+            let newQuantity;
+
+            if (action === 'increase') {
+                newQuantity = parseInt(quantityInput.value, 10) + 1;
+            } else if (action === 'decrease' && parseInt(quantityInput.value, 10) > 1) {
+                newQuantity = parseInt(quantityInput.value, 10) - 1;
+            } else {
+                // Invalid action or trying to decrease below 1
+                return;
+            }
+
+            // Update the input field with the new quantity
+            quantityInput.value = newQuantity;
+
+            // Now, you can send an AJAX request to update the quantity on the server
+            // Example using fetch:
+            fetch('/updateQuantity', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    productId: productIdString,
+                    newQuantity: newQuantity,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle the response if needed
+                console.log(data);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    });
+});
+
+function deleteCart(){
+    const productId = event.target.getAttribute('data-product-id');
+    console.log(productId);
+
+    fetch('/removeProduct',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({productId}),
+    })
+}
+
+       
+</script>
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/jquery.nice-select.min.js"></script>

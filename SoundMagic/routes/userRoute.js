@@ -55,12 +55,20 @@ user_route.get('/cart',userController.loadCart)
 //User Profile
 
 user_route.get('/user-profile',userController.loadProfile)
-
 user_route.post('/changePassword',userController.changePassword)
+user_route.post('/addAddress',userController.addAddress)
+user_route.post('/deleteAddress',userController.deleteAddress)
+
 
 //Add to Cart
 
 user_route.post('/addToCart',userController.addToCart)
+user_route.post('/updateQuantity',userController.updateQuantity)
+user_route.post('/removeProduct',userController.removeProduct)
+
+//Checkout
+
+user_route.get('/checkout',userController.loadCheckout)
 
 
 module.exports = user_route;

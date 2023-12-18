@@ -5,6 +5,7 @@ const sendMail = require("../services/otpVerification");
 const Category = require("../model/categoryModel");
 const Product = require("../model/productModel");
 const Cart = require("../model/cartModel");
+const Address = require("../model/addressModel")
 
 //hashing password
 const bcrypt = require("bcrypt");
@@ -217,14 +218,18 @@ const loadProfile = async (req, res) => {
   try {
     const userid = req.session.userid;
     const user = await User.findById(userid);
-    res.render("profile", { user });
+    const address = await Address.find({userId:userid})
+    console.log(address);
+    res.render("profile", { user,address });
   } catch (error) {}
 };
 
 const forgetPassword = async (req, res) => {
   try {
     res.render("forgetOtp");
-  } catch (error) {}
+  } catch (error) {
+    console.log(error.message);
+  }
 };
 
 const emailForgetPassword = async (req, res) => {
@@ -243,7 +248,7 @@ const emailForgetPassword = async (req, res) => {
       res.render("passwordOtp");
     } else {
       res.render("forgetOtp", {
-        error: "Email is not registered! Please Signup",
+        error: "Email is not registered !",
       });
     }
   } catch (error) {}
@@ -275,8 +280,12 @@ const updatePassword = async (req, res) => {
       { password: spassword },
       { new: true }
     );
-    res.redirect("/login");
-  } catch (error) {}
+    res.redirect('/login')
+    window.location.href = "login.html?passwordChanged=true";
+
+  } catch (error) {
+    console.log(error.message)
+  }
 };
 
 const changePassword = async (req, res) => {
@@ -295,7 +304,7 @@ const changePassword = async (req, res) => {
       { password: newPassword },
       { new: true }
     );
-    return res.status(200).json({ message: 'Password changed successfully' });
+    return res.json({ success: true, message: 'Password changed successfully' });
   } else {
     return res.status(400).json({ error: 'Current password does not match' });
   }
@@ -335,9 +344,12 @@ const addToCart = async (req, res) => {
           productId,
           quantity,
         });
-        // Increment total price by the offerPrice of the added product
-        userCart.totalPrice += product.offerPrice * quantity;
+        
+        
       }
+      
+      
+     
     }
 
     await userCart.save();
@@ -347,6 +359,81 @@ const addToCart = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+const updateQuantity = async(req,res)=>{
+  try {
+    const productId = req.body.productId;
+    const quantity = req.body.newQuantity;
+    const updatedCart = await Cart.findOneAndUpdate(
+      { 'items.productId': productId },
+      { $set: { 'items.$.quantity': quantity } },
+      { new: true }
+    );
+    
+  } catch (error) {
+    
+  }
+}
+
+const addAddress = async(req,res)=>{
+  try {
+    console.log(req.body                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           );
+    const userId = req.session.userid;
+    const userAddress =new Address({
+      userId:userId,
+      fullname:req.body.Fullname,
+      mobile:req.body.Mobile,
+      address:req.body.Address,
+      pincode:req.body.Pincode,
+      city:req.body.city,
+      State:req.body.state,
+    }) 
+    await userAddress.save();
+     return res.json({ success: true, message: 'Address added successfully' });
+    
+  } catch (error) {
+    console.log(error.message);
+    
+  }
+}
+
+
+const deleteAddress =async(req,res)=>{
+  try {
+   let productId = req.body.productId;
+
+   const productDetail = await Address.findByIdAndDelete({_id:productId})
+
+  } catch (error) {
+
+    console.error('Error:', error);
+    
+  }
+}
+
+const removeProduct = async(req,res)=>{
+  try {
+    const productId = req.body.productId;
+    const deleteCart = await Cart.findOneAndUpdate({'items.productId':productId},{$pull:{items:{productId:productId}}},{new:true})
+    
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
+const loadCheckout = async(req,res)=>{
+  try {
+    const userid = req.session.userid;
+    const cart = await Cart.find({userId:userid}).populate("items.productId")
+    console.log(cart);
+    const address = await Address.find({userId:userid})
+
+    res.render('checkout',{address,cart})
+    
+  } catch (error) {
+    console.log(error.message);
+  }
+}
 module.exports = {
   loadRegister,
   insertUser,
@@ -354,7 +441,6 @@ module.exports = {
   verifyOtp,
   Login,
   userLogin,
-
   loadHome,
   loadShop,
   productDetail,
@@ -367,4 +453,9 @@ module.exports = {
   updatePassword,
   changePassword,
   addToCart,
+  updateQuantity,
+  addAddress,
+  removeProduct,
+  loadCheckout,
+  deleteAddress
 };
