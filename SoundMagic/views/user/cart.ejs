@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="css/owl.carousel.min.css" type="text/css">
     <link rel="stylesheet" href="css/slicknav.min.css" type="text/css">
     <link rel="stylesheet" href="css/style.css" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2"></script>
     <style>
         .quantity-control {
     display: flex;
@@ -169,7 +170,7 @@
                                             <div class="quantity-control">
                                                 <button class="quantity-btn" data-action="decrease" data-product-id="<%= product.productId._id %>">-</button>
                                                 <input class="quantity-input" type="text" value="<%= product.quantity %>" data-product-id="<%= product.productId._id %>" readonly>
-                                                <button class="quantity-btn" data-action="increase" data-product-id="<%= product.productId._id %>">+</button>
+                                                <button class="quantity-btn" data-action="increase" data-stock="<%= product.productId.stock %>" data-product-id="<%= product.productId._id %>">+</button>
                                             </div>
                                             
                                             
@@ -299,13 +300,11 @@
     document.addEventListener('click', function (event) {
         if (event.target.classList.contains('quantity-btn')) {
             const action = event.target.getAttribute('data-action');
-            console.log(action);
             const productId = event.target.getAttribute('data-product-id');
-            console.log(productId);
+            const stock = event.target.getAttribute('data-stock')
 
             // Extract the unique identifier from productId
             const productIdString = productId.toString()
-            console.log(productIdString);
 
             const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productIdString}"]`);
 
@@ -313,6 +312,14 @@
 
             if (action === 'increase') {
                 newQuantity = parseInt(quantityInput.value, 10) + 1;
+                if(newQuantity>stock){
+                    Swal.fire({
+                    title: 'Stock unavailable!',
+                    showConfirmButton: false,
+                    timer: 1500,
+                     });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+                    return false;
+                }
             } else if (action === 'decrease' && parseInt(quantityInput.value, 10) > 1) {
                 newQuantity = parseInt(quantityInput.value, 10) - 1;
             } else {
@@ -337,6 +344,9 @@
             })
             .then(response => response.json())
             .then(data => {
+                if(data.success){
+                    location.reload();
+                }
                 // Handle the response if needed
                 console.log(data);
             })
@@ -353,6 +363,12 @@ function deleteCart(){
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({productId}),
+    })
+    .then(response=>response.json())
+    .then(data=>{
+        if(data.success){
+            location.reload();
+        }
     })
 }
 

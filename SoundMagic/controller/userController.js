@@ -6,6 +6,7 @@ const Category = require("../model/categoryModel");
 const Product = require("../model/productModel");
 const Cart = require("../model/cartModel");
 const Address = require("../model/addressModel")
+const Order = require("../model/orderModel")
 
 //hashing password
 const bcrypt = require("bcrypt");
@@ -111,6 +112,19 @@ const Login = async (req, res) => {
   }
 };
 
+
+const Logout = async(req,res)=>{
+  try {
+    req.session.destroy();
+    res.redirect('/login')
+        
+    
+  } catch (error) {
+    console.log(error.message)
+    
+  }
+}
+
 //User Login
 
 const userLogin = async (req, res) => {
@@ -206,8 +220,7 @@ const loadCart = async (req, res) => {
     const cartData = await Cart.findOne({ userId: userId }).populate(
       "items.productId"
     );
-
-    res.render("cart", { cart: cartData });
+    res.render("cart", { cart: cartData});
   } catch (error) {
     console.error("Error rendering cart page:", error);
     res.status(500).send("Internal server error");
@@ -219,9 +232,10 @@ const loadProfile = async (req, res) => {
     const userid = req.session.userid;
     const user = await User.findById(userid);
     const address = await Address.find({userId:userid})
-    console.log(address);
     res.render("profile", { user,address });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error.message);
+  }
 };
 
 const forgetPassword = async (req, res) => {
@@ -327,7 +341,6 @@ const addToCart = async (req, res) => {
       userCart = new Cart({
         userId: userId,
         items: [{ productId, quantity: 1 }],
-        totalPrice: product.offerPrice * quantity,
       });
     } else {
       // Check if the product is already in the cart
@@ -369,6 +382,9 @@ const updateQuantity = async(req,res)=>{
       { $set: { 'items.$.quantity': quantity } },
       { new: true }
     );
+    if(updatedCart){
+      res.json({success:true})
+    }
     
   } catch (error) {
     
@@ -403,6 +419,9 @@ const deleteAddress =async(req,res)=>{
    let Id = req.body.addressId;
 
    const productDetail = await Address.findByIdAndDelete({_id:Id})
+   if(productDetail){
+    res.json({success:true})
+   }
 
   } catch (error) {
 
@@ -415,6 +434,9 @@ const removeProduct = async(req,res)=>{
   try {
     const productId = req.body.productId;
     const deleteCart = await Cart.findOneAndUpdate({'items.productId':productId},{$pull:{items:{productId:productId}}},{new:true})
+    if(deleteCart){
+      res.json({success:true})
+    }
     
   } catch (error) {
     console.log(error.message);
@@ -437,6 +459,85 @@ const loadCheckout = async(req,res)=>{
     
   } catch (error) {
     console.log(error.message);
+  }
+}
+
+const placeOrder = async(req,res)=>{
+  try {
+    const userId =req.session.userid;
+    const addressId =req.body.addressId;
+    const subtotal =req.body.subtotal;
+    const paymentMethod =req.body.paymentMethod;
+    const address = await Address.find({_id:addressId}).populate('address')
+    const cart = await Cart.find({userId:userId})
+    const products = cart[0].items;
+
+    const userOrder = new Order({
+      userId:userId,
+      shippingAddress:{
+        fullname:address[0].fullname,
+        mobile:address[0].mobile,
+        address:address[0].address,
+        pincode:address[0].pincode,
+        city:address[0].city,
+        state:address[0].State,
+
+      },
+      products:products,
+      totalAmount:subtotal,
+      paymentMethod:paymentMethod,
+    })
+    const order=await userOrder.save();
+    if(order){
+      await Cart.findOneAndUpdate({userId:userId},{$set:{items:[]}});
+      //////Update Stock//////
+      for(const product of products){
+        const productId= product.productId;
+        const quantity = product.quantity;
+        await Product.findOneAndUpdate({_id:productId},{$inc:{stock:-quantity}})
+      }
+      ////////////////////////
+    }
+    res.json({success:true})
+
+
+  } catch (error) {
+
+    console.log(error.message);
+    
+  }
+}
+
+const orderPlaced = async(req,res)=>{
+  try {
+
+    res.render('orderSuccess')
+    
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
+const loadOrders = async(req,res)=>{
+  try {
+    const userId = req.session.userid;
+    const orders= await Order.find({userId}).populate({path:"products.productId"})
+    res.render('myOrders',{orders})
+    
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
+const orderDetail = async(req,res)=>{
+  try {
+
+    res.render('orderDetail')
+    
+  } catch (error) {
+
+    console.log(error.message)
+    
   }
 }
 module.exports = {
@@ -462,5 +563,10 @@ module.exports = {
   addAddress,
   removeProduct,
   loadCheckout,
-  deleteAddress
+  deleteAddress,
+  placeOrder,
+  orderPlaced,
+  Logout,
+  loadOrders,
+  orderDetail
 };

@@ -5,6 +5,7 @@ const user_route = express();
 user_route.set('views','./views/user')
 
 const userController = require('../controller/userController');
+const auth = require('../middleware/userAuth');
 
 
 
@@ -25,7 +26,10 @@ user_route.get('/resendOTP',userController.resendOtp)
 
 
 //Login
-user_route.get('/login',userController.Login);
+user_route.get('/login',auth.isLogout,userController.Login);
+
+//Logout
+user_route.get('/logout',auth.isLogin,userController.Logout)
 
 user_route.post('/login',userController.userLogin);
 
@@ -41,7 +45,7 @@ user_route.post('/updatePassword',userController.updatePassword);
  
 
 //Home
-user_route.get('/home',userController.loadHome);
+user_route.get('/home',auth.isLogin,userController.loadHome);
 
 //Shop
 user_route.get('/shop',userController.loadShop);
@@ -60,6 +64,7 @@ user_route.post('/addAddress',userController.addAddress)
 user_route.post('/deleteAddress',userController.deleteAddress)
 
 
+
 //Add to Cart
 
 user_route.post('/addToCart',userController.addToCart)
@@ -70,6 +75,11 @@ user_route.post('/removeProduct',userController.removeProduct)
 
 user_route.get('/checkout',userController.loadCheckout)
 user_route.post('/placeOrder',userController.placeOrder)
+user_route.get('/successOrder',userController.orderPlaced)
+
+//Orders
+user_route.get('/myOrders',userController.loadOrders)
+user_route.get('/orderDetail',userController.orderDetail)
 
 
 

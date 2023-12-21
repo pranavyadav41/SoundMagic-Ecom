@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="css/slicknav.min.css" type="text/css">
     <link rel="stylesheet" href="css/style.css" type="text/css">
     <link rel="stylesheet" href="userCss/productDetail.css" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2"></script>
 </head>
 
 <body>
@@ -97,7 +98,7 @@
 
     <!-- Shop Details Section Begin -->
     <section class="shop-details">
-        <div class="product__details__pic">
+        <div class="product__details__pic p-0 mb-0">
             <div class="container">
                 <div class="row">
                     <div class="col-lg-12">
@@ -157,15 +158,16 @@
                             </div>
                             <h3>₹<%= product.offerPrice %> <span>₹<%= product.actualPrice %></span></h3>
                             <p><%= product.description %></p>
+                            <% if(product.stock>0){ %>
                             <div class="product__details__cart__option">
-                                <div class="quantity">
-                                    <div class="pro-qty">
-                                        <input type="text" value="1">
-                                    </div>
-                                </div>
-                                <a href="#" class="primary-btn">add to cart</a>
-                                <a href="#" class="primary-btn">Buy Now</a>
+                                <a href="" onclick="addToCart('<%= product._id %>')" class="primary-btn">add to cart</a>
                             </div>
+                            <% }else{ %>
+                                <div class="product__details__cart__option">
+                                    <h4 style="color: red;">Currently not Available</h4>
+                                </div>
+                                <% } %>
+
                             <div class="product__details__btns__option">
                                 <a href="#"><i class="fa fa-heart"></i> add to wishlist</a>
                             </div>
@@ -255,6 +257,64 @@
         </div>
     </div>
     <!-- Search End -->
+    <script>
+    function addToCart(productId) {
+        event.preventDefault();
+    fetch('/addToCart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: productId })
+    })
+    .then(response => {
+        if (!response.ok) {
+            response.json().then(data=>{
+                if(data.error==='Product already added to cart'){
+            Swal.fire({
+          icon: 'info',
+          title: 'Item Already in Cart',
+          showConfirmButton: false,
+          timer: 1500,
+        });
+            
+        }else if(data.error==="Product is out of stock"){
+            Swal.fire({
+          icon: 'error',
+          title: 'The product is out of stock',
+          showConfirmButton: false,
+          timer: 1500,
+        });
+
+        }
+    })
+           
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+          icon: 'success',
+          title: 'Product added to cart',
+          showConfirmButton: false,
+          timer: 1500,
+        });
+            
+
+            // Optionally, update your UI or trigger additional actions
+        }else{
+           
+            console.error("Failed to add to cart:", data.message);
+            // Handle the error, show a message, or perform other actions
+
+        }
+    })
+    .catch(error => {
+        console.error("Error during addToCart:", error.message);
+        // Log the error or handle it appropriately
+    });
+}
+    </script>
 
     <!-- Js Plugins -->
     <script src="/userScript/productDetail.js"></script>

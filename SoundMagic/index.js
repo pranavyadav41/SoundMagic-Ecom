@@ -23,9 +23,8 @@ app.use(session({
   saveUninitialized: true,
 }));
 
-const bodyParser = require('body-parser');
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended:true}))
+app.use(express.json());
+app.use(express.urlencoded({extended:true}))
 
 //for user routes
 const user_route = require('./routes/userRoute');

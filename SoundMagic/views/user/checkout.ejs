@@ -376,7 +376,6 @@ fetch('/addAddress',{
 .then(data => {
 if(data.success){
     location.reload()
-console.log("done");
 }
 })
 .catch(error => {
@@ -395,25 +394,53 @@ function deleteAddress(){
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({addressId:addressId})
      })
+     .then(response=>response.json())
+     .then(data=>{
+        if(data.success){
+            location.reload();
+        }
+     })
 }
 ///////////////PLACING ORDER//////////////////////////////////
 function placeOrder(subtotal){
     const selectedRadio = document.querySelector('input[name="addressRadio"]:checked')
     const codCheckBox = document.getElementById('payment')
-
+     
+    let addressId =null;
     if(selectedRadio){
-        const addressId = selectedRadio.dataset.addressId;
+         addressId = selectedRadio.dataset.addressId;
+        }else{
+            alert("please select the shipping address")
+            return false;
         }
-
+         
+        let paymentMethod =null;
         if(codCheckBox.checked){
-            const paymentMethod ="Cash on delivery";
+             paymentMethod ="Cash on delivery";
+        }else{
+            alert("Please select the payment method")
+            return false;
         }
 
         fetch('/placeOrder',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({addressId:addressId,subtotal,paymentMethod})
+            body:JSON.stringify({addressId,subtotal,paymentMethod})
         })
+        .then(response => {
+        if (!response.ok) {
+        throw new Error('Network response was not ok');
+       }
+        return response.json();
+    })
+    .then(data=>{
+        if(data.success){
+            window.location.href='/successOrder';
+        }else{
+            console.log("order failed");
+        }
+    })
+    .catch(error => console.error('Error:', error));
 }
 
 

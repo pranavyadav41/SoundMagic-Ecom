@@ -30,12 +30,12 @@
             <button type="submit">Verify</button>
         </form><br>
         <div id="timer-container">
-            <p id="a"><b> Did'nt got the otp? Resend in </b><span id="timer">5</span> <b>seconds</b></p>
+            <p id="a"><b> Did'nt got the otp? Resend in </b><span id="timer"><b>60</b></span> <b>seconds</b></p>
             <button  id="resendButton" style="display:none; margin-left: 80px; margin-bottom: 30px; background-color: transparent; color:green; font-size: small;" onclick="resendOTP()"><u><b>Resend OTP</b></u></button>
         </div>
     </div>
     <script>
-        var timer =5; // Initial timer value in seconds
+        var timer =60; // Initial timer value in seconds
         var countdown = setInterval(function() {
             timer--;
             document.getElementById('timer').textContent = timer;
