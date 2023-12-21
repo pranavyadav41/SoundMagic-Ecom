@@ -1,5 +1,6 @@
 const Product = require('../model/productModel')
 const Category = require('../model/categoryModel')
+const Order = require('../model/orderModel')
 
 const loadProduct = async(req,res)=>{
     try {
@@ -179,6 +180,19 @@ const editProduct = async(req,res)=>{
     }
 }
 
+const orders = async(req,res)=>{
+    try {
+
+        const orders = await Order.find();
+        console.log(orders);
+        
+        res.render('orders')
+
+    } catch (error) {
+        
+    }
+}
+
 module.exports = {
     loadProduct,
     loadAddProduct,
@@ -186,5 +200,6 @@ module.exports = {
     listProduct,
     unlistProduct,
     loadEditProduct,
-    editProduct
+    editProduct,
+    orders
 }
