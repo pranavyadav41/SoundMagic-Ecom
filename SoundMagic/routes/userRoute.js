@@ -48,17 +48,17 @@ user_route.post('/updatePassword',userController.updatePassword);
 user_route.get('/home',auth.isLogin,userController.loadHome);
 
 //Shop
-user_route.get('/shop',userController.loadShop);
+user_route.get('/shop',auth.isLogin,userController.loadShop);
 
 //Product Detail
-user_route.get('/productDetail',userController.productDetail);
+user_route.get('/productDetail',auth.isLogin,userController.productDetail);
 
 //Cart
-user_route.get('/cart',userController.loadCart)
+user_route.get('/cart',auth.isLogin,userController.loadCart)
 
 //User Profile
 
-user_route.get('/user-profile',userController.loadProfile)
+user_route.get('/user-profile',auth.isLogin,userController.loadProfile)
 user_route.post('/changePassword',userController.changePassword)
 user_route.post('/addAddress',userController.addAddress)
 user_route.post('/deleteAddress',userController.deleteAddress)
@@ -73,13 +73,13 @@ user_route.post('/removeProduct',userController.removeProduct)
 
 //Checkout
 
-user_route.get('/checkout',userController.loadCheckout)
+user_route.get('/checkout',auth.isLogin,userController.loadCheckout)
 user_route.post('/placeOrder',userController.placeOrder)
-user_route.get('/successOrder',userController.orderPlaced)
+user_route.get('/successOrder',auth.isLogin,userController.orderPlaced)
 
 //Orders
-user_route.get('/myOrders',userController.loadOrders)
-user_route.get('/orderDetail',userController.orderDetail)
+user_route.get('/myOrders',auth.isLogin,userController.loadOrders)
+user_route.get('/orderDetail/:id',auth.isLogin,userController.orderDetail)
 
 
 

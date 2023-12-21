@@ -14,271 +14,306 @@
     rel="stylesheet">
 
     <!-- Css Styles -->
-    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
-    <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css">
-    <link rel="stylesheet" href="css/elegant-icons.css" type="text/css">
-    <link rel="stylesheet" href="css/magnific-popup.css" type="text/css">
-    <link rel="stylesheet" href="css/nice-select.css" type="text/css">
-    <link rel="stylesheet" href="css/owl.carousel.min.css" type="text/css">
-    <link rel="stylesheet" href="css/slicknav.min.css" type="text/css">
-    <link rel="stylesheet" href="css/style.css" type="text/css">
-    <link rel="stylesheet" href="userCss/productDetail.css" type="text/css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="/css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="/css/elegant-icons.css" type="text/css">
+    <link rel="stylesheet" href="/css/magnific-popup.css" type="text/css">
+    <link rel="stylesheet" href="/css/nice-select.css" type="text/css">
+    <link rel="stylesheet" href="/css/owl.carousel.min.css" type="text/css">
+    <link rel="stylesheet" href="/css/slicknav.min.css" type="text/css">
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+    <link rel="stylesheet" href="/css/Sstyle.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2"></script>
-</head>
-<style>
-  .gradient-custom-2 {
-/* fallback for old browsers */
-background: #a1c4fd;
-
-/* Chrome 10-25, Safari 5.1-6 */
-background: -webkit-linear-gradient(to right, rgba(161, 196, 253, 1), rgba(194, 233, 251, 1));
-
-/* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-background: linear-gradient(to right, rgba(161, 196, 253, 1), rgba(194, 233, 251, 1))
-}
-
-#progressbar-1 {
-color: #455A64;
-}
-
-#progressbar-1 li {
-list-style-type: none;
-font-size: 13px;
-width: 33.33%;
-float: left;
-position: relative;
-}
-
-#progressbar-1 #step1:before {
-content: "1";
-color: #fff;
-width: 29px;
-margin-left: 22px;
-padding-left: 11px;
-}
-
-#progressbar-1 #step2:before {
-content: "2";
-color: #fff;
-width: 29px;
-}
-
-#progressbar-1 #step3:before {
-content: "3";
-color: #fff;
-width: 29px;
-margin-right: 22px;
-text-align: center;
-}
-
-#progressbar-1 li:before {
-line-height: 29px;
-display: block;
-font-size: 12px;
-background: #455A64;
-border-radius: 50%;
-margin: auto;
-}
-
-#progressbar-1 li:after {
-content: '';
-width: 121%;
-height: 2px;
-background: #455A64;
-position: absolute;
-left: 0%;
-right: 0%;
-top: 15px;
-z-index: -1;
-}
-
-#progressbar-1 li:nth-child(2):after {
-left: 50%
-}
-
-#progressbar-1 li:nth-child(1):after {
-left: 25%;
-width: 121%
-}
-
-#progressbar-1 li:nth-child(3):after {
-left: 25%;
-width: 50%;
-}
-
-#progressbar-1 li.active:before,
-#progressbar-1 li.active:after {
-background: #1266f1;
-}
-
-.card-stepper {
-z-index: 0
-}
-</style>
-
-<body>
-    <!-- Page Preloder -->
-    <div id="preloder">
-        <div class="loader"></div>
-    </div>
-
-    <!-- Offcanvas Menu Begin -->
-    <div class="offcanvas-menu-overlay"></div>
-    <div class="offcanvas-menu-wrapper">
-        <div class="offcanvas__option">
-            <div class="offcanvas__links">
-                <a href="#">Sign in</a>
-                <a href="#">FAQs</a>
-            </div>
-            <div class="offcanvas__top__hover">
-                <span>Usd <i class="arrow_carrot-down"></i></span>
-                <ul>
-                    <li>USD</li>
-                    <li>EUR</li>
-                    <li>USD</li>
-                </ul>
-            </div>
-        </div>
-        <div class="offcanvas__nav__option">
-            <a href="#" class="search-switch"><img src="img/icon/search.png" alt=""></a>
-            <a href="#"><img src="img/icon/heart.png" alt=""></a>
-            <a href="#"><img src="img/icon/cart.png" alt=""> <span>0</span></a>
-            <div class="price">$0.00</div>
-        </div>
-        <div id="mobile-menu-wrap"></div>
-        <div class="offcanvas__text">
-            <p>Free shipping, 30-day return or refund guarantee.</p>
-        </div>
-    </div>
-    <!-- Offcanvas Menu End -->
-
-    <!-- Header Section Begin -->
-    <header class="header">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3 col-md-3">
-                    <div class="header__logo">
-                        <img src="../assets/images/logos/soundMagic logo.png" width="180" alt="" />
-                    </div>
-                </div>
-                <div class="col-lg-6 col-md-6">
-                    <nav class="header__menu mobile-menu">
-                        <ul>
-                            <li><a href="/home">Home</a></li>
-                            <li class="active"><a href="/shop">Shop</a></li>
-                            <li><a href="#">About Us</a></li>
-                            <li><a href="./blog.html">Contact Us</a></li>
-                        </ul>
-                    </nav>
-                </div>
-                <div class="col-lg-3 col-md-3">
-                    <div class="header__nav__option">
-                        <a href="#" class="search-switch"><img src="img/icon/search.png" alt=""></a>
-                        <a href="#"><img src="img/icon/heart.png" alt=""></a>
-                        <a href="#"><img src="img/icon/cart.png" alt=""></a>
-                        <a href="#"><img src="img/icon/user.png" alt=""></a>
-
-                    </div>
-                </div>
-            </div>
-            <div class="canvas__open"><i class="fa fa-bars"></i></div>
-        </div>
-    </header>
-    <!-- Header Section End -->
-    <section class="vh-100 gradient-custom-2">
-        <div class="container py-5 h-100">
-          <div class="row d-flex justify-content-center align-items-center h-100">
-            <div class="col-md-10 col-lg-8 col-xl-6">
-              <div class="card card-stepper" style="border-radius: 16px;">
-                <div class="card-header p-4">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <p class="text-muted mb-2"> Order ID <span class="fw-bold text-body">1222528743</span></p>
-                      <p class="text-muted mb-0"> Place On <span class="fw-bold text-body">12,March 2019</span> </p>
-                    </div>
-                    <div>
-                      <h6 class="mb-0"> <a href="#">View Details</a> </h6>
-                    </div>
-                  </div>
-                </div>
-                <div class="card-body p-4">
-                  <div class="d-flex flex-row mb-4 pb-2">
-                    <div class="flex-fill">
-                      <h5 class="bold">Headphones Bose 35 II</h5>
-                      <p class="text-muted"> Qt: 1 item</p>
-                      <h4 class="mb-3"> $ 299 <span class="small text-muted"> via (COD) </span></h4>
-                      <p class="text-muted">Tracking Status on: <span class="text-body">11:30pm, Today</span></p>
-                    </div>
-                    <div>
-                      <img class="align-self-center img-fluid"
-                        src="https://mdbcdn.b-cdn.net/img/Photos/Horizontal/E-commerce/Products/6.webp" width="250">
-                    </div>
-                  </div>
-                  <ul id="progressbar-1" class="mx-0 mt-0 mb-5 px-0 pt-0 pb-4">
-                    <li class="step0 active" id="step1"><span
-                        style="margin-left: 22px; margin-top: 12px;">PLACED</span></li>
-                    <li class="step0 active text-center" id="step2"><span>SHIPPED</span></li>
-                    <li class="step0 text-muted text-end" id="step3"><span
-                        style="margin-right: 22px;">DELIVERED</span></li>
-                  </ul>
-                </div>
-                <div class="card-footer p-4">
-                  <div class="d-flex justify-content-between">
-                    <h5 class="fw-normal mb-0"><a href="#!">Track</a></h5>
-                    <div class="border-start h-100"></div>
-                    <h5 class="fw-normal mb-0"><a href="#!">Cancel</a></h5>
-                    <div class="border-start h-100"></div>
-                    <h5 class="fw-normal mb-0"><a href="#!">Pre-pay</a></h5>
-                    <div class="border-start h-100"></div>
-                    <h5 class="fw-normal mb-0"><a href="#!" class="text-muted"><i class="fas fa-ellipsis-v"></i></a>
-                    </h5>
-                  </div>
-                </div>
-              </div>
-            </div>
+    <style>
+        body {
+                  font-family: 'Arial', sans-serif;
+                  background-color: #f4f4f4;
+                  margin: 0;
+                  padding: 0;
+                  box-sizing: border-box;
+              }
       
-            <!-- Delivery Address Section (Placeholder) -->
-            <div class="col-md-10 col-lg-8 col-xl-6">
-              <div class="card card-delivery-address" style="border-radius: 16px;">
-                <div class="card-header p-4">
-                  <h4 class="mb-0">Delivery Address</h4>
-                </div>
-                <div class="card-body p-4">
-                  <!-- Your delivery address details go here -->
-                  <p class="text-muted">John Doe</p>
-                  <p class="text-muted">123 Main Street</p>
-                  <p class="text-muted">City, Country</p>
-                </div>
-              </div>
-            </div>
-            <!-- End of Delivery Address Section -->
-          </div>
-        </div>
-      </section>
+              .order-detail-container {
+                  display:flex;
+                  flex-direction: column;
+                  max-width: 800px;
+                  margin: 20px auto;
+                  background-color: #fff;
+                  padding: 20px;
+                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+              }
       
-    <!-- Search Begin -->
-    <div class="search-model">
-        <div class="h-100 d-flex align-items-center justify-content-center">
-            <div class="search-close-switch">+</div>
-            <form class="search-model-form">
-                <input type="text" id="search-input" placeholder="Search here.....">
-            </form>
+              .order-heading {
+                  font-size: 24px;
+                  font-weight: bold;
+                  margin-bottom: 20px;
+              }
+      
+              .product-item {
+                  border-bottom: 1px solid #ddd;
+                  padding: 10px 0;
+                  display: flex;
+                  align-items: center;
+              }
+      
+              .product-image {
+                  max-width: 100px;
+                  margin-right: 20px;
+              }
+      
+              .product-details {
+                  flex-grow: 1;
+              }
+      
+              .product-name {
+                  font-size: 18px;
+                  font-weight: bold;
+                  margin-bottom: 5px;
+              }
+      
+              .product-price {
+                  font-size: 16px;
+                  color: #888;
+                  margin-bottom: 5px;
+              }
+      
+              .order-total {
+                  font-weight: bold;
+                  font-size: 18px;
+                  margin-top: 20px;
+              }
+      
+              .address-table {
+                  width: 100%;
+                  margin-top: 20px;
+                  border-collapse: collapse;
+              }
+      
+              .address-table th,
+              .address-table td {
+                  border: 1px solid #ddd;
+                  padding: 8px;
+                  text-align: left;
+              }
+      
+              .back-to-orders {
+                  padding: 10px;
+                  cursor: pointer;
+                  background-color: #3498db;
+                  color: #fff;
+                  border: none;
+                  font-weight: bold;
+                  transition: background-color 0.3s ease;
+                  margin-top: 20px;
+              }
+      
+              .back-to-orders:hover {
+                  background-color: #2980b9;
+              }
+      </style>
+      </head>
+
+    <body>
+        <!-- Page Preloder -->
+        <!-- <div id="preloder">
+            <div class="loader"></div>
+        </div> -->
+    
+        <!-- Offcanvas Menu Begin -->
+        <div class="offcanvas-menu-overlay"></div>
+        <div class="offcanvas-menu-wrapper">
+            <div class="offcanvas__option">
+                <div class="offcanvas__links">
+                    <a href="#">Sign in</a>
+                    <a href="#">FAQs</a>
+                </div>
+                <div class="offcanvas__top__hover">
+                    <span>Usd <i class="arrow_carrot-down"></i></span>
+                    <ul>
+                        <li>USD</li>
+                        <li>EUR</li>
+                        <li>USD</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="offcanvas__nav__option">
+                <a href="#" class="search-switch"><img src="img/icon/search.png" alt=""></a>
+                <a href="#"><img src="img/icon/heart.png" alt=""></a>
+                <a href="#"><img src="img/icon/cart.png" alt=""> <span>0</span></a>
+                <div class="price">$0.00</div>
+            </div>
+            <div id="mobile-menu-wrap"></div>
+            <div class="offcanvas__text">
+                <p>Free shipping, 30-day return or refund guarantee.</p>
+            </div>
+        </div>
+        <!-- Offcanvas Menu End -->
+    
+        <!-- Header Section Begin -->
+        <header class="header">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-3 col-md-3">
+                        <div class="header__logo p-0 mt-4">
+                            <a href="./index.html"><img src="../assets/images/logos/download.png" width="180" alt="" /></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-6">
+                        <nav class="header__menu mobile-menu">
+                            <ul>
+                                <li><a href="/home">Home</a></li>
+                                <li class="active"><a href="/shop">Shop</a></li>
+                                <li><a href="#">About Us</a></li>
+                                <li><a href="./blog.html">Contact Us</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="col-lg-3 col-md-3">
+                        <div class="header__nav__option">
+                            <a href="#" class="search-switch"><img src="img/icon/search.png" alt=""></a>
+                            <a href="#"><img src="img/icon/heart.png" alt=""></a>
+                            <a href="/cart"><img src="img/icon/cart.png" alt=""></a>
+                            <a href="/user-profile"><img src="img/icon/user.png" alt=""></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="canvas__open"><i class="fa fa-bars"></i></div>
+            </div>
+        </header>
+        <!-- Header Section End -->
+        <!-- Delivery address section -->
+        <div class="order-detail-container">
+            <h4><b>Delivery Address</b></h4>
+            <div class="address-section">
+                <div class="address-line"><b><%= order.shippingAddress.fullname %></b></div>
+                <div class="address-line"><%= order.shippingAddress.address %></div>
+                <div class="address-line"><%= order.shippingAddress.city %></div>
+                <div class="d-flex">
+                    <div><%= order.shippingAddress.state %></div>
+                    <div class="ml-2"><%= order.shippingAddress.pincode %></div>
+                </div>
+                <!-- Add more lines for additional address details -->
+            </div>
+        </div>
+    <div class="order-detail-container">
+        <!-- Product details section -->
+        <div class="product-details">
+            <div class="order-heading">Order Details</div>
+    
+            <!-- Repeat the following block for each product in the order -->
+            <div class="product-item">
+                <img class="product-image" src="/productImages/<%= product.image[0] %>" alt="Product Image"style="height: 80px;width: 80px;">
+                <div class="product-details">
+                    <div class="product-name"><%= product.productName %></div>
+                    <div class="product-price"><%= product.offerPrice %></div>
+                </div>
+            </div>
+            <!-- End of product item -->
+    
+            <!-- Repeat the above block for each product in the order -->
+    
+            <!-- Order total -->
+            <div class="order-total"></div>
         </div>
     </div>
-    <!-- Search End -->
+    <!-- Footer Section Begin -->
+          <footer class="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="footer__about">
+                            <div class="footer__logo">
+                                <a href="#"><img src="img/footer-logo.png" alt=""></a>
+                            </div>
+                            <p>The customer is at the heart of our unique business model, which includes design.</p>
+                            <a href="#"><img src="img/payment.png" alt=""></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 offset-lg-1 col-md-3 col-sm-6">
+                        <div class="footer__widget">
+                            <h6>Shopping</h6>
+                            <ul>
+                                <li><a href="#">Clothing Store</a></li>
+                                <li><a href="#">Trending Shoes</a></li>
+                                <li><a href="#">Accessories</a></li>
+                                <li><a href="#">Sale</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-6">
+                        <div class="footer__widget">
+                            <h6>Shopping</h6>
+                            <ul>
+                                <li><a href="#">Contact Us</a></li>
+                                <li><a href="#">Payment Methods</a></li>
+                                <li><a href="#">Delivary</a></li>
+                                <li><a href="#">Return & Exchanges</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 offset-lg-1 col-md-6 col-sm-6">
+                        <div class="footer__widget">
+                            <h6>NewLetter</h6>
+                            <div class="footer__newslatter">
+                                <p>Be the first to know about new arrivals, look books, sales & promos!</p>
+                                <form action="#">
+                                    <input type="text" placeholder="Your email">
+                                    <button type="submit"><span class="icon_mail_alt"></span></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12 text-center">
+                        <div class="footer__copyright__text">
+                            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                            <p>Copyright ©
+                                <script>
+                                    document.write(new Date().getFullYear());
+                                </script>2020
+                                All rights reserved | This template is made with <i class="fa fa-heart-o"
+                                aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
+                            </p>
+                            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Footer Section End -->
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript">
 
-    <!-- Js Plugins -->
-    <script src="/userScript/productDetail.js"></script>
-    <script src="js/jquery-3.3.1.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/jquery.nice-select.min.js"></script>
-    <script src="js/jquery.nicescroll.min.js"></script>
-    <script src="js/jquery.magnific-popup.min.js"></script>
-    <script src="js/jquery.countdown.min.js"></script>
-    <script src="js/jquery.slicknav.js"></script>
-    <script src="js/mixitup.min.js"></script>
-    <script src="js/owl.carousel.min.js"></script>
-    <script src="js/main.js"></script>
-</body>
-
-</html>
+    </script>
+       <!-- Js Plugins -->
+       <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyUEl7A3e6pk6EFD1/Q8dEN5O7Sc6JXAvm" crossorigin="anonymous">
+       <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+       <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+       <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+       
+       
+    
+           <script src="/js/jquery-3.3.1.min.js"></script>
+           <script src="/js/bootstrap.min.js"></script>
+           <script src="/js/jquery.nice-select.min.js"></script>
+           <script src="/js/jquery.nicescroll.min.js"></script>
+           <script src="/js/jquery.magnific-popup.min.js"></script>
+           <script src="/js/jquery.countdown.min.js"></script>
+           <script src="/js/jquery.slicknav.js"></script>
+           <script src="/js/mixitup.min.js"></script>
+           <script src="/js/owl.carousel.min.js"></script>
+           <script src="/js/main.js"></script>
+           <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+           <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+           <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
+           <script type="text/javascript">
+       
+           </script>
+       </body>
+       
+       </html>
+    

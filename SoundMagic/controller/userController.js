@@ -531,8 +531,19 @@ const loadOrders = async(req,res)=>{
 
 const orderDetail = async(req,res)=>{
   try {
+    const userId = req.session.userid;
+    const productid = req.params.id;
 
-    res.render('orderDetail')
+    const order = await Order.findOne({ 'products.productId': productid }).populate({path:"products"})
+    const product = await Product.findOne({_id:productid})
+    console.log(order);
+    console.log("end");
+    console.log(product);
+    console.log(order.products.quantity);
+
+
+
+    res.render('orderDetail',{order,product})
     
   } catch (error) {
 
