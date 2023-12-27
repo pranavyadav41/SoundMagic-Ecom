@@ -26,91 +26,61 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2"></script>
     <style>
-        body {
-                  font-family: 'Arial', sans-serif;
-                  background-color: #f4f4f4;
-                  margin: 0;
-                  padding: 0;
-                  box-sizing: border-box;
-              }
-      
-              .order-detail-container {
-                  display:flex;
-                  flex-direction: column;
-                  max-width: 800px;
-                  margin: 20px auto;
-                  background-color: #fff;
-                  padding: 20px;
-                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-              }
-      
-              .order-heading {
-                  font-size: 24px;
-                  font-weight: bold;
-                  margin-bottom: 20px;
-              }
-      
-              .product-item {
-                  border-bottom: 1px solid #ddd;
-                  padding: 10px 0;
-                  display: flex;
-                  align-items: center;
-              }
-      
-              .product-image {
-                  max-width: 100px;
-                  margin-right: 20px;
-              }
-      
-              .product-details {
-                  flex-grow: 1;
-              }
-      
-              .product-name {
-                  font-size: 18px;
-                  font-weight: bold;
-                  margin-bottom: 5px;
-              }
-      
-              .product-price {
-                  font-size: 16px;
-                  color: #888;
-                  margin-bottom: 5px;
-              }
-      
-              .order-total {
-                  font-weight: bold;
-                  font-size: 18px;
-                  margin-top: 20px;
-              }
-      
-              .address-table {
-                  width: 100%;
-                  margin-top: 20px;
-                  border-collapse: collapse;
-              }
-      
-              .address-table th,
-              .address-table td {
-                  border: 1px solid #ddd;
-                  padding: 8px;
-                  text-align: left;
-              }
-      
-              .back-to-orders {
-                  padding: 10px;
-                  cursor: pointer;
-                  background-color: #3498db;
-                  color: #fff;
-                  border: none;
-                  font-weight: bold;
-                  transition: background-color 0.3s ease;
-                  margin-top: 20px;
-              }
-      
-              .back-to-orders:hover {
-                  background-color: #2980b9;
-              }
+       body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .container table {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .section1 {
+      margin-bottom: 20px;
+      background-color: #fff;
+      width:500px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-header1 {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .product-details {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-image img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .product-info {
+      margin-right: 20px;
+    }
+
+    .delivery-address p {
+      margin-bottom: 10px;
+    }
+    .product{
+        background-color: #fff;
+        width:500px;
+        align-items: center;
+    }
+    .he{
+        margin-left: 10px;
+    }
       </style>
       </head>
 
@@ -182,41 +152,55 @@
             </div>
         </header>
         <!-- Header Section End -->
-        <!-- Delivery address section -->
-        <div class="order-detail-container">
-            <h4><b>Delivery Address</b></h4>
-            <div class="address-section">
-                <div class="address-line"><b><%= order.shippingAddress.fullname %></b></div>
-                <div class="address-line"><%= order.shippingAddress.address %></div>
-                <div class="address-line"><%= order.shippingAddress.city %></div>
-                <div class="d-flex">
-                    <div><%= order.shippingAddress.state %></div>
-                    <div class="ml-2"><%= order.shippingAddress.pincode %></div>
+        <div class="container table d-flex">
+            <!-- Product Details Section -->
+            <div class="section mt-3">
+              <div class="section-header1">Product Details</div>
+              <!-- Repeat the following block for each product in the order -->
+              <div class="product d-flex">
+                <div class="mt-3 ml-3">
+                  <img src="/productImages/<%= product.image[0] %>" alt="Product Image" style="width:150px;height:150px;">
                 </div>
-                <!-- Add more lines for additional address details -->
+                <div class="ml-4 mt-2">
+                  <p><strong>Product Name:</strong><%= product.productName %></p>
+                  <p><strong>Quantity:</strong><%= targetProduct.quantity %></p>
+                  <p><strong>Price:</strong> &#8377;<%= order.totalAmount %></p>
+                  <% if(targetProduct.productOrderStatus=='Order placed'){ %>
+                  <button class="btn btn-danger btn-sm" onclick="cancelOrder('<%= product._id %>','<%= order._id %>')">Cancel Order</button>
+                  <% }else if(targetProduct.productOrderStatus=='cancelled'){ %>
+
+                    <p style="color: red;"><strong>Order cancelled</strong></p>
+
+                    <% } %>
+
+                </div>
+              </div>
+              <!-- Repeat the above block for each product -->
+            </div>
+            <div class="section2 ml-5 mt-3">
+        
+            <!-- Delivery Address Section -->
+            <div class="section-header1">Delivery Address</div>
+            <div class="section1">
+              <p class="he"><strong>Name:</strong><%= order.shippingAddress.fullname %></p>
+              <p class="he"><strong>Address:</strong><%= order.shippingAddress.address %></p>
+              <p class="he"><strong>City:</strong><%= order.shippingAddress.city %></p>
+              <p class="he"><strong>State:</strong><%= order.shippingAddress.state %></p>
+              <p class="he"><strong>PinCode:</strong><%= order.shippingAddress.pincode %></p>
+            </div>
+        
+            <!-- Order Info Section -->
+            <div class="section-header1">Order Details</div>
+            <div class="section1">
+              <p class="he"><strong>Date:</strong><%= order.OrderDate %></p>
+              <p class="he"><strong>Order ID:</strong><%= order._id %></p>
+              <p class="he"><strong>Order Status:</strong><%= targetProduct.productOrderStatus %></p>
+              <p class="he"><strong>Payment Method:</strong><%= order.paymentMethod %></p>
             </div>
         </div>
-    <div class="order-detail-container">
-        <!-- Product details section -->
-        <div class="product-details">
-            <div class="order-heading">Order Details</div>
+          </div>
     
-            <!-- Repeat the following block for each product in the order -->
-            <div class="product-item">
-                <img class="product-image" src="/productImages/<%= product.image[0] %>" alt="Product Image"style="height: 80px;width: 80px;">
-                <div class="product-details">
-                    <div class="product-name"><%= product.productName %></div>
-                    <div class="product-price"><%= product.offerPrice %></div>
-                </div>
-            </div>
-            <!-- End of product item -->
     
-            <!-- Repeat the above block for each product in the order -->
-    
-            <!-- Order total -->
-            <div class="order-total"></div>
-        </div>
-    </div>
     <!-- Footer Section Begin -->
           <footer class="footer">
             <div class="container">
@@ -313,6 +297,20 @@
            <script type="text/javascript">
        
            </script>
+            <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+            <script>
+                async function cancelOrder(productId,orderId){
+                    console.log(productId);
+                    console.log(orderId);
+                   fetch('/cancelOrder',{
+                    method:'POST',
+                    headers:{'Content-type':'application/json'},
+                    body:JSON.stringify({productId,orderId})
+                   })
+                }
+            </script>
        </body>
        
        </html>

@@ -8,6 +8,18 @@ const Cart = require("../model/cartModel");
 const Address = require("../model/addressModel")
 const Order = require("../model/orderModel")
 
+
+//IF USER IS BLOCKED
+const userIsBlocked = async(req,res)=>{
+  try {
+
+    res.render('isBlocked')
+    
+  } catch (error) {
+    
+  }
+}
+
 //hashing password
 const bcrypt = require("bcrypt");
 const securePassword = async (password) => {
@@ -36,6 +48,11 @@ function generateOTP() {
 
 const insertUser = async (req, res) => {
   try {
+    const existUser = await User.findOne({email:req.body.email});
+    if(existUser){
+     res.render('userSignup',{message:"Email already exist!"});
+     return false;
+    }
     const spassword = await securePassword(req.body.password);
     const user = new User({
       firstname: req.body.firstname,
@@ -50,6 +67,7 @@ const insertUser = async (req, res) => {
 
     if (userData) {
       const otp = generateOTP();
+      console.log(otp);
       req.session.name = req.body.firstname;
       req.session.otp = otp;
       console.log(req.session.otp);
@@ -523,6 +541,7 @@ const loadOrders = async(req,res)=>{
     const userId = req.session.userid;
     const orders= await Order.find({userId}).populate({path:"products.productId"})
     res.render('myOrders',{orders})
+    console.log(orders);
     
   } catch (error) {
     console.log(error.message);
@@ -531,24 +550,45 @@ const loadOrders = async(req,res)=>{
 
 const orderDetail = async(req,res)=>{
   try {
-    const userId = req.session.userid;
-    const productid = req.params.id;
+    const orderId = req.params.orderId;
+    const productId = req.params.productId;
 
-    const order = await Order.findOne({ 'products.productId': productid }).populate({path:"products"})
-    const product = await Product.findOne({_id:productid})
-    console.log(order);
-    console.log("end");
-    console.log(product);
-    console.log(order.products.quantity);
+    const order = await Order.findOne({_id:orderId})
+
+  
+    const targetProduct = order.products.find(product=>product.productId.toString()===productId)
+
+    const product = await Product.findOne({_id:targetProduct.productId})
+    
 
 
-
-    res.render('orderDetail',{order,product})
+    res.render('orderDetail',{order,targetProduct,product})
     
   } catch (error) {
 
     console.log(error.message)
     
+  }
+}
+
+const cancelOrder = async(req,res)=>{
+  try {
+
+    const productId = req.body.productId;
+    const orderId = req.body.orderId;
+
+    const order = await Order.findOne({_id:orderId})
+
+    const targetProduct = order.products.find(product=>product.productId.toString()===productId)
+
+    targetProduct.productOrderStatus = 'cancelled';
+
+    await order.save();
+
+    
+  } catch (error) {
+
+    console.log(error.message);
   }
 }
 module.exports = {
@@ -579,5 +619,7 @@ module.exports = {
   orderPlaced,
   Logout,
   loadOrders,
-  orderDetail
+  orderDetail,
+  userIsBlocked,
+  cancelOrder
 };

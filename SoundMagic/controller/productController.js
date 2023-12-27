@@ -183,13 +183,20 @@ const editProduct = async(req,res)=>{
 const orders = async(req,res)=>{
     try {
 
-        const orders = await Order.find();
-        console.log(orders);
+        const orders = await Order.find().populate({path:'userId'});
+        console.log(orders.products);
         
-        res.render('orders')
+        res.render('orders',{orders})
 
     } catch (error) {
         
+    }
+}
+const orderDetail = async(req,res)=>{
+    try {
+        res.render('orderDetail')
+    } catch (error) {
+        console.log(error.message);
     }
 }
 
@@ -201,5 +208,6 @@ module.exports = {
     unlistProduct,
     loadEditProduct,
     editProduct,
-    orders
+    orders,
+    orderDetail
 }

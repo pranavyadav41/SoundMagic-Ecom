@@ -53,9 +53,15 @@ const loadEditCategories = async(req,res)=>{
 }
 
 const editCategories = async(req,res)=>{
+ try {
     const categoryId = req.params.id;
     const updateName = req.body.name;
-try {
+    const formattedName = updateName.charAt(0).toUpperCase() + updateName.slice(1).toLowerCase();
+    const copy = await Category.findOne({name:formattedName});
+    if(copy){
+        console.log("category name already exist");
+        return false;
+    }
    
     const category = await Category.findById(categoryId);
      category.name = updateName;

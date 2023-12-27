@@ -12,6 +12,9 @@
   <div class="container">
     <div class="form">
         <header>Signup</header>
+        <% if (locals.message) { %>
+          <p style="color: red; margin-left: 110px; margin-bottom: 10px;"><%= message %></p>
+      <% } %>
         <form action="" method="post" id="signupForm" onsubmit="return validateForm()">
             <input type="text" name="firstname" id="firstname" placeholder="Enter your Firstname" required>
             <div id="firstnameError" class="error-message"></div>

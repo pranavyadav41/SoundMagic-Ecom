@@ -8,6 +8,9 @@ const userController = require('../controller/userController');
 const auth = require('../middleware/userAuth');
 
 
+//BLOCKED BY ADMIN
+user_route.get('/isBlocked',userController.userIsBlocked)
+
 
 //signup
 user_route.get('/',userController.loadRegister);
@@ -45,41 +48,42 @@ user_route.post('/updatePassword',userController.updatePassword);
  
 
 //Home
-user_route.get('/home',auth.isLogin,userController.loadHome);
+user_route.get('/home',auth.isLogin,auth.isBlocked,userController.loadHome);
 
 //Shop
-user_route.get('/shop',auth.isLogin,userController.loadShop);
+user_route.get('/shop',auth.isLogin,auth.isBlocked,userController.loadShop);
 
 //Product Detail
-user_route.get('/productDetail',auth.isLogin,userController.productDetail);
+user_route.get('/productDetail',auth.isLogin,auth.isBlocked,userController.productDetail);
 
 //Cart
-user_route.get('/cart',auth.isLogin,userController.loadCart)
+user_route.get('/cart',auth.isLogin,auth.isBlocked,userController.loadCart)
 
 //User Profile
 
-user_route.get('/user-profile',auth.isLogin,userController.loadProfile)
-user_route.post('/changePassword',userController.changePassword)
-user_route.post('/addAddress',userController.addAddress)
-user_route.post('/deleteAddress',userController.deleteAddress)
+user_route.get('/user-profile',auth.isLogin,auth.isBlocked,userController.loadProfile)
+user_route.post('/changePassword',auth.isLogin,auth.isBlocked,userController.changePassword)
+user_route.post('/addAddress',auth.isLogin,auth.isBlocked,userController.addAddress)
+user_route.post('/deleteAddress',auth.isLogin,auth.isBlocked,userController.deleteAddress)
 
 
 
 //Add to Cart
 
-user_route.post('/addToCart',userController.addToCart)
-user_route.post('/updateQuantity',userController.updateQuantity)
-user_route.post('/removeProduct',userController.removeProduct)
+user_route.post('/addToCart',auth.isLogin,auth.isBlocked,userController.addToCart)
+user_route.post('/updateQuantity',auth.isLogin,auth.isBlocked,userController.updateQuantity)
+user_route.post('/removeProduct',auth.isLogin,auth.isBlocked,userController.removeProduct)
 
 //Checkout
 
-user_route.get('/checkout',auth.isLogin,userController.loadCheckout)
-user_route.post('/placeOrder',userController.placeOrder)
-user_route.get('/successOrder',auth.isLogin,userController.orderPlaced)
+user_route.get('/checkout',auth.isLogin,auth.isBlocked,userController.loadCheckout)
+user_route.post('/placeOrder',auth.isLogin,auth.isBlocked,userController.placeOrder)
+user_route.get('/successOrder',auth.isLogin,auth.isBlocked,userController.orderPlaced)
 
 //Orders
-user_route.get('/myOrders',auth.isLogin,userController.loadOrders)
-user_route.get('/orderDetail/:id',auth.isLogin,userController.orderDetail)
+user_route.get('/myOrders',auth.isLogin,auth.isBlocked,userController.loadOrders)
+user_route.get('/orderDetail/:orderId/:productId',auth.isLogin,auth.isBlocked,userController.orderDetail)
+user_route.post('/cancelOrder',auth.isLogin,auth.isBlocked,userController.cancelOrder)
 
 
 

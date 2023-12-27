@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <title>Order Management</title>
+</head>
+<body>
+
+<div class="container mt-4">
+  <h2>Order Details</h2>
+
+  <!-- Display order details such as order ID, user details, order date, etc. -->
+
+  <h3>Product List</h3>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Loop through each product in the order -->
+      <tr>
+        <td>Product 1</td>
+        <td>2</td>
+        <td>$50.00</td>
+        <td>
+          <!-- Dropdown for changing product status -->
+          <select class="form-control">
+            <option value="pending">Pending</option>
+            <option value="processing">Processing</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </td>
+        <td>
+          <!-- Additional actions for the product (if needed) -->
+          <button class="btn btn-sm btn-primary">Update</button>
+        </td>
+      </tr>
+      <!-- Repeat the above row for each product in the order -->
+    </tbody>
+  </table>
+
+  <h4>Order Status: <span id="orderStatus">Pending</span></h4>
+
+  <!-- Dropdown for changing the entire order's shipping address -->
+  <div class="form-group">
+    <label for="newShippingAddress">Change Shipping Address:</label>
+    <input type="text" class="form-control" id="newShippingAddress">
+  </div>
+
+  <!-- Update Order Button -->
+  <button class="btn btn-primary" onclick="updateOrder()">Update Order</button>
+
+</div>
+
+<script>
+  function updateOrder() {
+    // Implement logic to update the order and product statuses
+    // Also, handle the change in the entire order's shipping address
+    alert('Order updated successfully!');
+  }
+</script>
+
+</body>
+</html>

@@ -37,17 +37,17 @@ admin_route.patch('/Unblock-user/:userID',adminController.userUnblock)
 
 admin_route.get('/categories',auth.isLogin,categoryController.loadCategories)
 
-admin_route.post('/categories',categoryController.addCategories)
+admin_route.post('/categories',auth.isLogin,categoryController.addCategories)
 
 //editCategories
 
 admin_route.get('/categories/edit/:id',auth.isLogin,categoryController.loadEditCategories)
-admin_route.post('/categories/edit/:id',categoryController.editCategories)
+admin_route.post('/categories/edit/:id',auth.isLogin,categoryController.editCategories)
 
 //ListAndUnlist Categories
 
-admin_route.patch('/list-category/:id',categoryController.listCategory)
-admin_route.patch('/unlist-category/:id',categoryController.unlistCategory)
+admin_route.patch('/list-category/:id',auth.isLogin,categoryController.listCategory)
+admin_route.patch('/unlist-category/:id',auth.isLogin,categoryController.unlistCategory)
 
 
 //Products
@@ -59,25 +59,24 @@ admin_route.get('/products',auth.isLogin,productController.loadProduct)
 
 admin_route.get('/products/add-product',auth.isLogin,productController.loadAddProduct)
 
-admin_route.post('/products/add-product',Multer.array('image',4),productController.addProduct)
+admin_route.post('/products/add-product',Multer.array('image',4),auth.isLogin,productController.addProduct)
 
 
 //List/Unlist Products
 
-admin_route.patch('/list-product/:id',productController.listProduct);
+admin_route.patch('/list-product/:id',auth.isLogin,productController.listProduct);
 
-admin_route.patch('/unlist-product/:id',productController.unlistProduct);
+admin_route.patch('/unlist-product/:id',auth.isLogin,productController.unlistProduct);
 
 //Edit Products
 admin_route.get('/products/edit/:id',auth.isLogin,productController.loadEditProduct)
 
-admin_route.post('/products/edit/:id',Multer.array('image',4),productController.editProduct)
+admin_route.post('/products/edit/:id',Multer.array('image',4),auth.isLogin,productController.editProduct)
 
 //MY ORDERS
-admin_route.get('/orders',productController.orders)
+admin_route.get('/orders',auth.isLogin,productController.orders)
 
-
- 
+admin_route.get('/orderDetail',auth.isLogin,productController.orderDetail)
 
 
 

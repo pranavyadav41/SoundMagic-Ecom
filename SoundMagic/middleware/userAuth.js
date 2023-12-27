@@ -1,3 +1,6 @@
+const User =require("../model/userModel");
+
+
 const isLogin = async(req,res,next)=>{
     try {
         if(req.session.userid){
@@ -29,7 +32,26 @@ const isLogout = async(req,res,next)=>{
     }
 }
 
+const isBlocked = async(req,res,next)=>{
+    try {
+
+        const user = await User.findOne({_id:req.session.userid})
+        if(user.isBlocked){
+             res.redirect('/isBlocked')
+             req.session.destroy();
+        }else{
+            next();
+        }
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
 module.exports = {
     isLogin,
-    isLogout
+    isLogout,
+    isBlocked
 }

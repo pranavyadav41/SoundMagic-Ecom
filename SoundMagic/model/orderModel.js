@@ -43,6 +43,10 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         required: true,
       },
+      productOrderStatus:{
+        type:String,
+        default:"Order placed"
+      }
     },
   ],
   OrderStatus: {

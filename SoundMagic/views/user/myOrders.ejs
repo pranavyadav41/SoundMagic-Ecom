@@ -25,80 +25,86 @@
     <link rel="stylesheet" href="css/Sstyle.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2"></script>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        .dot {
-  height: 8px;
-  width: 8px;
-  background-color: #266233;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 5px;
-}
+   <style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-        .order-container {
-            max-width: 800px;
-            margin: 20px auto;
-            background-color: #fff;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+  .container-table {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow-x: auto; /* Enable horizontal scrolling on small screens */
+  }
 
-        .order-item {
-            border-bottom: 1px solid #ddd;
-            padding: 10px 0;
-            display: flex;
-            align-items: center;
-        }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
 
-        .product-image {
-            max-width: 100px;
-            margin-right: 20px;
-        }
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
 
-        .product-details {
-            flex-grow: 1;
-            text-align: left;
-        }
+  th {
+    background-color: #333;
+    color: #fff;
+  }
 
-        .product-name {
-            font-size: 18px;
-            font-family:Arial, Helvetica, sans-serif;
-            margin-bottom: 5px;
-        }
+  tr:hover {
+    background-color: #f5f5f5;
+  }
 
-        .product-price {
-            font-size: 16px;
-            color: #888;
-            margin-bottom: 5px;
-        }
+  .status-shipped {
+    color: #2196F3;
+  }
 
-        .order-subtotal {
-            font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
+  .btn {
+    padding: 8px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+  }
 
-        .view-details-btn {
-            padding: 10px;
-            cursor: pointer;
-            background-color: #3498db;
-            color: #fff;
-            border: none;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-        }
+  /* Responsive Styling */
+  @media only screen and (max-width: 600px) {
+    table, thead, tbody, th, td, tr {
+      display: block;
+    }
 
-        .view-details-btn:hover {
-            background-color: #2980b9;
-        }
-    </style>
+    th {
+      display: none;
+    }
+
+    td {
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    td:before {
+      content: attr(data-label);
+      float: left;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      margin-top: 10px;
+    }
+  }
+</style>
     
 </head>
 
@@ -186,35 +192,38 @@
 
 
    <!-- MY ORDERS SECTION BEGIN -->
-   <% orders.forEach((order)=>{ %>
-   <div class="order-container">
-    <!-- Repeat the following block for each order -->
-    <% order.products.forEach((product)=>{ %>
-    <div class="order-item">
-        <img class="product-image" src="/productImages/<%= product.productId.image[0] %>" alt="Product Image" style="height: 80px;width: 80px;">
-        <div class="product-details">
-        <div class="d-flex">
-        <div>
-            <div class="product-name"><b><%= product.productId.productName %></b></div>
-            <div class="product-price">&#8377;<%= product.productId.offerPrice %></div>
-        </div>
-        <div class="mt-3 ml-5">
-            
-        </div>
-    </div>
-            
-        </div>
-        <div class="d-flex">
-        <div class="order-status mr-5 mt-2"><span style="color: green;"><span class="dot"></span><b><%= order.OrderStatus %></b></span></div>
-        <a href="/orderDetail/<%= product.productId._id %>"   class="btn btn-dark">View details</a>
-    </div>
-    </div>
-    <!-- End of order item -->
-    <% }); %>
-
-    <!-- Repeat the above block for each order -->
-</div>
-<% }); %>
+   <div class="container -table">
+    <table>
+      <thead>
+        <tr>
+          <th>PRODUCT IMAGES</th>
+          <th>PRODUCT NAME</th>
+          <th>ORDERED</th>
+          <th>STATUS</th>
+          <th>TOTAL</th>
+          <th>METHOD</th>
+          <th>MANAGE</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Example order row, repeat this for each order -->
+        <% orders.forEach((order)=>{ %>
+            <% order.products.forEach((product)=>{ %>
+         <tr>
+          <td><img src="productImages/<%= product.productId.image[0] %>" alt="" width="50" style="width:80px; height:80px;"></td>
+          <td><%= product.productId.productName %></td>
+          <td><%= order.OrderDate %></td>
+          <td class="status-shipped"><%= order.OrderStatus %></td>
+          <td><%= product.productId.offerPrice*product.quantity %></td>
+          <td><%= product.productOrderStatus %></td>
+          <td><a href="/orderDetail/<%= order._id %>/<%= product.productId._id %>" class="btn btn-dark" style="color: white;">Manage</a></td>
+        </tr>
+        <% }); %>
+        <% }); %>
+        <!-- Repeat the above row for each order -->
+      </tbody>
+    </table>
+  </div>
 <!-- MY ORDERS SECTION END -->
   
         <!-- Footer Section Begin -->
