@@ -1,6 +1,9 @@
 const Product = require('../model/productModel')
 const Category = require('../model/categoryModel')
 const Order = require('../model/orderModel')
+const Coupon = require('../model/couponModel')
+const moment = require('moment')
+const now = moment();
 
 const loadProduct = async(req,res)=>{
     try {
@@ -184,7 +187,6 @@ const orders = async(req,res)=>{
     try {
 
         const orders = await Order.find().populate({path:'userId'});
-        console.log(orders.products);
         
         res.render('orders',{orders})
 
@@ -194,10 +196,156 @@ const orders = async(req,res)=>{
 }
 const orderDetail = async(req,res)=>{
     try {
-        res.render('orderDetail')
+        const orderId = req.params.orderID
+        const orders = await Order.findOne({_id:orderId}).populate({path:'products.productId'});
+        res.render('orderDetail',{orders})
     } catch (error) {
         console.log(error.message);
     }
+}
+
+const orderStatus = async(req,res)=>{
+    try {
+        const productId = req.body.productId;
+        const orderId = req.body.orderId;
+        const newStatus = req.body.newValue;
+
+        const order = await Order.findOne({_id:orderId})
+
+        const targetProduct = order.products.find(product=>product.productId.toString()===productId)
+    
+        targetProduct.productOrderStatus = newStatus 
+    
+        await order.save();
+        
+    } catch (error) {
+        
+        console.log(error.message)
+    }
+}
+
+const coupons = async(req,res)=>{
+    try {
+
+        const coupons = await Coupon.find();
+
+        res.render('coupon',{coupons})
+        
+    } catch (error) {
+       console.log(error.message) 
+    }
+}
+
+const addCoupons = async(req,res)=>{
+    try {
+
+        res.render('addcoupon')
+        
+    } catch (error) {
+        console.log(error.message)
+    }
+}
+
+const couponAdd = async(req,res)=>{
+    try {
+        const newCoupon = new Coupon({
+            code:req.body.couponCode,
+            couponName:req.body.couponName,
+            validFrom:req.body.validFrom,
+            expiry:req.body.validTo,
+            discountAmount:req.body.discountAmount,
+            minimumCartValue:req.body.minCartValue,
+        })
+        await newCoupon.save();
+        res.json({success:true});
+        
+
+        
+    } catch (error) {
+
+        console.log(error)
+        
+    }
+
+}
+
+const editCoupon = async(req,res)=>{
+    try {
+        const couponId = req.params.id;
+        const coupon = await Coupon.find({_id:couponId})
+
+        res.render('editCoupon',{coupon});
+        
+    } catch (error) {
+
+        console.log(error.message)
+        
+    }
+}
+
+const couponEdit = async(req,res)=>{
+    try {
+
+        const coupon = await Coupon.findByIdAndUpdate({_id:req.body.couponId},{
+            $set:{
+                code:req.body.coupon.couponCode,
+                couponName:req.body.coupon.couponName,
+                validFrom:req.body.coupon.validFrom,
+                expiry:req.body.coupon.validTo,
+                discountAmount:req.body.coupon.discountAmount,
+                minimumCartValue:req.body.coupon.minCartValue
+            }
+        });
+
+        res.json({success:true})
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const listCoupon = async(req,res)=>{
+    try {
+
+        const id = req.params.id
+        const coupon = await Coupon.findOne({ _id: id })
+        if (!coupon) {
+            return res.status(404).json({ error: 'Coupon not found' });
+        }
+        coupon.listed = 1;
+        await coupon.save()
+        res.json({ message: 'Coupon listed successfully' })
+
+
+        
+    } catch (error) {
+        
+        console.log(error.message);
+    }
+}
+
+const unlistCoupon = async(req,res)=>{
+    try {
+
+        const id = req.params.id
+
+        const coupon = await Coupon.findOne({ _id: id })
+        if (!coupon) {
+            return res.status(404).json({ error: 'Coupon not found' });
+        }
+        coupon.listed = 0;
+        await coupon.save()
+        res.json({ message: 'Coupon Unlisted successfully' })
+
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+
 }
 
 module.exports = {
@@ -209,5 +357,13 @@ module.exports = {
     loadEditProduct,
     editProduct,
     orders,
-    orderDetail
+    orderDetail,
+    orderStatus,
+    coupons,
+    addCoupons,
+    couponAdd,
+    editCoupon,
+    couponEdit,
+    listCoupon,
+    unlistCoupon
 }

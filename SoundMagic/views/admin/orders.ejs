@@ -193,11 +193,11 @@
               </a>
             </li>
             <li class="sidebar-item">
-              <a class="sidebar-link" href="./ui-typography.html" aria-expanded="false">
+              <a class="sidebar-link" href="/admin/coupons" aria-expanded="false">
                 <span>
                   <i class="ti ti-typography"></i>
                 </span>
-                <span class="hide-menu">Payments</span>
+                <span class="hide-menu">Coupons</span>
               </a>
             </li>
             <li class="sidebar-item">
@@ -277,7 +277,6 @@
               <th>Customer Name</th>
               <th>Payment</th>
               <th>Total Amount</th>
-              <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -290,10 +289,9 @@
                 <td><%= order.userId.firstname %></td>
                 <td>₹<%= order.paymentMethod %></td>
                 <td>₹<%= order.totalAmount %></td>
-                <td><%= order.OrderStatus %></td>
                 <td>
                   <div class="action-buttons">
-                    <button class="btn btn-dark">Manage</button>
+                    <a href="/admin/orderDetail/<%= order._id %>" class="btn btn-dark">Manage</a>
                   </div>
                 </td>
               </tr>

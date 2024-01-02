@@ -76,7 +76,20 @@ admin_route.post('/products/edit/:id',Multer.array('image',4),auth.isLogin,produ
 //MY ORDERS
 admin_route.get('/orders',auth.isLogin,productController.orders)
 
-admin_route.get('/orderDetail',auth.isLogin,productController.orderDetail)
+admin_route.get('/orderDetail/:orderID',auth.isLogin,productController.orderDetail)
+
+admin_route.post('/orderStatus',auth.isLogin,productController.orderStatus)
+
+//COUPON
+
+admin_route.get('/coupons',auth.isLogin,productController.coupons)
+admin_route.get('/addCoupon',auth.isLogin,productController.addCoupons)
+admin_route.post('/addCoupon',auth.isLogin,productController.couponAdd)
+admin_route.get('/editCoupon/:id',auth.isLogin,productController.editCoupon)
+admin_route.post('/editCoupon',auth.isLogin,productController.couponEdit)
+
+admin_route.patch('/list-coupon/:id',auth.isLogin,productController.listCoupon);
+admin_route.patch('/unlist-coupon/:id',auth.isLogin,productController.unlistCoupon);
 
 
 

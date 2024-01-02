@@ -182,6 +182,7 @@
     <div class="container light-style flex-grow-1 container-p-y">
         <div class="d-flex justify-content-end mr-5">
             <button class="btn btn-dark"><a href="/myOrders" style="color: #fff;  text-decoration:none;">MY ORDERS</a></button>
+            <button class="btn btn-dark ml-2"><a   href="/myWallet"    style="color: #fff;  text-decoration:none;">MY WALLET</a></button>
             </div>
         <div class="card overflow-hidden">
             <div class="row no-gutters row-bordered row-border-light">
@@ -303,7 +304,7 @@
                                                         <p><%= address.State %><span> , </span></p>
                                                         <p><%= address.pincode %></p>
                                                     </div>
-                                                    <button type="button" class="btn btn-success btn-sm">Edit</button>
+                                                    <button type="button" class="btn btn-success btn-sm"><a href="/editAddress/<%= address._id %>" style="color: white;">Edit</a></button>
                                                     <button type="button" class="btn btn-danger btn-sm" data-address-id="<%= address._id %>" onclick="deleteAddress()">Delete</button>
                                                 </div>
                                             <% }); %>
@@ -620,12 +621,7 @@
          .then(response => response.json()) // Assuming the response is in JSON format
          .then(data => {
           if(data.success){
-           Swal.fire({
-                 icon: 'success',
-                 title: 'Address added successfully',
-                 showConfirmButton: false,
-                 timer: 1500,
-               });
+             window.location.href = "/user-profile"
           }
          })
          .catch(error => {
@@ -641,7 +637,16 @@
                method:'POST',
                headers:{'Content-Type':'application/json'},
                body:JSON.stringify({addressId:addressId})
-            })
+            }) .then(response => response.json()) // Assuming the response is in JSON format
+            .then(data => {
+            if(data.success){
+                window.location.href = "/user-profile"
+            }
+         })
+         .catch(error => {
+           // Handle errors
+           console.error('Error:', error);
+         });
        }
        
        </script>

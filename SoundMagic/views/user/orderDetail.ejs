@@ -164,14 +164,22 @@
                 <div class="ml-4 mt-2">
                   <p><strong>Product Name:</strong><%= product.productName %></p>
                   <p><strong>Quantity:</strong><%= targetProduct.quantity %></p>
-                  <p><strong>Price:</strong> &#8377;<%= order.totalAmount %></p>
-                  <% if(targetProduct.productOrderStatus=='Order placed'){ %>
+                  <p><strong>Price/unit: </strong> &#8377;<%= product.offerPrice %></p>
+                  <% if(targetProduct.productOrderStatus=='Order placed'||targetProduct.productOrderStatus=='shipped'){ %>
                   <button class="btn btn-danger btn-sm" onclick="cancelOrder('<%= product._id %>','<%= order._id %>')">Cancel Order</button>
-                  <% }else if(targetProduct.productOrderStatus=='cancelled'){ %>
+                  <% }else if(targetProduct.productOrderStatus=='Cancelled'){ %>
 
-                    <p style="color: red;"><strong>Order cancelled</strong></p>
+                    <p style="color: red;"><strong>Order Cancelled</strong></p>
+
+                    <% }else if(targetProduct.productOrderStatus=='delivered'){ %>
+                    <button class="btn btn-dark btn-sm" onclick="returnOrder('<%= product._id %>','<%= order._id %>')">Return Order</button>
+                    <% }else if(targetProduct.productOrderStatus=='Returned'){ %>
+
+                        <p style="color: red;"><strong>Order Returned</strong></p>
 
                     <% } %>
+
+
 
                 </div>
               </div>
@@ -302,13 +310,33 @@
             <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
             <script>
                 async function cancelOrder(productId,orderId){
-                    console.log(productId);
-                    console.log(orderId);
                    fetch('/cancelOrder',{
                     method:'POST',
                     headers:{'Content-type':'application/json'},
                     body:JSON.stringify({productId,orderId})
                    })
+                   .then(response=>response.json())
+                   .then(data=>{
+                   if(data.success){
+                        location.reload();
+                   }
+                    })
+                }
+
+
+                async function returnOrder(productId,orderId){
+                    fetch('/returnOrder',{
+                    method:'POST',
+                    headers:{'Content-type':'application/json'},
+                    body:JSON.stringify({productId,orderId})
+                   })
+                   .then(response=>response.json())
+                   .then(data=>{
+                   if(data.success){
+                        location.reload();
+                   }
+                    })
+
                 }
             </script>
        </body>

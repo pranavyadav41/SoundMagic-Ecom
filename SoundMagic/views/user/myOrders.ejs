@@ -33,6 +33,14 @@
     padding: 0;
     box-sizing: border-box;
   }
+  .contain{
+    width:300px;
+    height:300px;
+    background-color:rgb(244, 244, 244);
+    margin-left: 400px;
+    flex-direction: column;
+    align-items: center;
+  }
 
   .container-table {
     max-width: 1200px;
@@ -193,6 +201,19 @@
 
    <!-- MY ORDERS SECTION BEGIN -->
    <div class="container -table">
+    <% if(orders.length==0){ %>
+
+        <div class="contain d-flex justify-content-center align-items-center">
+
+
+        <img src="/img/Wavy_Bus-26_Single-11.jpg" alt="" style="height: 200px; width:200px;">
+        <p class="mt-2"><strong>NO ORDERS FOUND!</strong></p>
+
+        </div>
+
+
+
+        <% }else{ %>
     <table>
       <thead>
         <tr>
@@ -201,6 +222,7 @@
           <th>ORDERED</th>
           <th>STATUS</th>
           <th>TOTAL</th>
+          <th>OFFER PRICE</th>
           <th>METHOD</th>
           <th>MANAGE</th>
         </tr>
@@ -213,13 +235,23 @@
           <td><img src="productImages/<%= product.productId.image[0] %>" alt="" width="50" style="width:80px; height:80px;"></td>
           <td><%= product.productId.productName %></td>
           <td><%= order.OrderDate %></td>
-          <td class="status-shipped"><%= order.OrderStatus %></td>
-          <td><%= product.productId.offerPrice*product.quantity %></td>
-          <td><%= product.productOrderStatus %></td>
+          <td class="status-shipped"><%= product.productOrderStatus %></td>
+          <td>&#8377;<%= product.productId.offerPrice*product.quantity %></td>
+          <% if (order.discountedPrice != 0){%>
+          <td>&#8377;<%= (product.productId.offerPrice*product.quantity - totalDiscountPerProduct).toFixed() %></td>
+
+          <% }else{ %>
+            <td>--</td>
+
+            <% } %>
+
+          <td><%= order.paymentMethod %></td>
           <td><a href="/orderDetail/<%= order._id %>/<%= product.productId._id %>" class="btn btn-dark" style="color: white;">Manage</a></td>
         </tr>
         <% }); %>
         <% }); %>
+
+        <% } %>
         <!-- Repeat the above row for each order -->
       </tbody>
     </table>

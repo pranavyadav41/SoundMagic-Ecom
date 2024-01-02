@@ -1,12 +1,18 @@
 //For rendering signup page
 
 const User = require("../model/userModel");
+require('dotenv').config({ path: 'config/.env' });
 const sendMail = require("../services/otpVerification");
+const crypto = require('crypto')
 const Category = require("../model/categoryModel");
 const Product = require("../model/productModel");
 const Cart = require("../model/cartModel");
 const Address = require("../model/addressModel")
 const Order = require("../model/orderModel")
+const Razorpay = require("razorpay")
+const Coupon = require("../model/couponModel")
+const Wallet = require("../model/walletModel")
+var instance = new Razorpay({ key_id:process.env.KEY_ID, key_secret:process.env.KEY_SECRET })
 
 
 //IF USER IS BLOCKED
@@ -448,6 +454,57 @@ const deleteAddress =async(req,res)=>{
   }
 }
 
+const myWallet = async(req,res)=>{
+  try {
+
+    res.render('myWallet')
+    
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
+const editAddress = async(req,res)=>{
+  try {
+
+    const addressId = req.params.id;
+
+    const address = await Address.find({_id:addressId})
+
+
+
+    res.render('editAddress',{address});
+    
+  } catch (error) {
+    
+    console.log(error.message)
+  }
+}
+
+const addressEdit = async(req,res)=>{
+  try {
+
+  const update = await Address.findByIdAndUpdate({_id:req.body.id},{
+  $set:{
+    fullname:req.body.address.Fullname,
+    mobile:req.body.address.Mobile,
+    address:req.body.address.Address,
+    pincode:req.body.address.Pincode,
+    city:req.body.address.city,
+    State:req.body.address.state
+
+  }
+  });
+
+  res.json({success:true});
+    
+  } catch (error) {
+
+    console.log(error.message);
+    
+  }
+}
+
 const removeProduct = async(req,res)=>{
   try {
     const productId = req.body.productId;
@@ -465,6 +522,7 @@ const loadCheckout = async(req,res)=>{
   try {
     const userid = req.session.userid;
     const cart = await Cart.find({userId:userid}).populate("items.productId")
+    const coupons = await Coupon.find({listed:1})
     ////CALCULATING SUBTOTAL////////////
     let subtotal = 0;
     cart[0].items.forEach(item=>{
@@ -473,7 +531,7 @@ const loadCheckout = async(req,res)=>{
     ////////////////////////////////////
     const address = await Address.find({userId:userid})
 
-    res.render('checkout',{address,cart,subtotal})
+    res.render('checkout',{address,cart,subtotal,coupons})
     
   } catch (error) {
     console.log(error.message);
@@ -484,11 +542,18 @@ const placeOrder = async(req,res)=>{
   try {
     const userId =req.session.userid;
     const addressId =req.body.addressId;
-    const subtotal =req.body.subtotal;
+    const subtotal = req.body.subtotal;
+    let discountPrice = 0;
+    if(req.body.newSubtotalValue){
+      discountPrice = req.body.newSubtotalValue;
+    }
     const paymentMethod =req.body.paymentMethod;
+    const user = await User.find({_id:userId})
     const address = await Address.find({_id:addressId}).populate('address')
     const cart = await Cart.find({userId:userId})
     const products = cart[0].items;
+
+    if(paymentMethod==="Cash on delivery"){
 
     const userOrder = new Order({
       userId:userId,
@@ -503,6 +568,7 @@ const placeOrder = async(req,res)=>{
       },
       products:products,
       totalAmount:subtotal,
+      discountedPrice:discountPrice,
       paymentMethod:paymentMethod,
     })
     const order=await userOrder.save();
@@ -517,6 +583,28 @@ const placeOrder = async(req,res)=>{
       ////////////////////////
     }
     res.json({success:true})
+  }else if(paymentMethod==="Online payment"){
+
+    var options = {
+      amount: subtotal,  // amount in the smallest currency unit
+      currency: "INR",
+      receipt:userId,
+    };
+    instance.orders.create(options, function(err, order) {
+      if(err){
+
+        console.log(err);
+
+      }else{
+      console.log("Order created",order);
+
+      res.json({ success: true,order,user,addressId,discountPrice});
+      }
+    });
+   
+
+
+  }
 
 
   } catch (error) {
@@ -536,12 +624,91 @@ const orderPlaced = async(req,res)=>{
   }
 }
 
+const paymentVerify = async(req,res)=>{
+  try {
+    let hmac = crypto.createHmac('sha256',process.env.KEY_SECRET)
+    hmac.update(req.body.payment.razorpay_order_id+'|'+req.body.payment.razorpay_payment_id);
+    hmac = hmac.digest('hex');
+
+    if(hmac===req.body.payment.razorpay_signature){
+      console.log("Payment successfull");
+     const userid = req.body.order.receipt;
+     const addressId = req.body.options.notes.address;
+     const discountAmount = req.body.options.notes.discount;
+     const subtotal = req.body.order.amount;
+     const paymentMethod = "Online payment";
+     const address = await Address.find({_id:addressId}).populate('address')
+     const cart = await Cart.find({userId:userid})
+     const products = cart[0].items;
+     
+    const userOrder = new Order({
+      userId:userid,
+      shippingAddress:{
+        fullname:address[0].fullname,
+        mobile:address[0].mobile,
+        address:address[0].address,
+        pincode:address[0].pincode,
+        city:address[0].city,
+        state:address[0].State,
+
+      },
+      products:products,
+      totalAmount:subtotal,
+      discountedPrice:discountAmount,
+      paymentMethod:paymentMethod,
+    })
+    const order=await userOrder.save();
+    if(order){
+      await Cart.findOneAndUpdate({userId:userid},{$set:{items:[]}});
+      //////Update Stock//////
+      for(const product of products){
+        const productId= product.productId;
+        const quantity = product.quantity;
+        await Product.findOneAndUpdate({_id:productId},{$inc:{stock:-quantity}})
+      }
+      ////////////////////////
+     
+    }
+    res.json({success:true})
+   
+    }else{
+      console.log("payment failed");
+    }
+    
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
 const loadOrders = async(req,res)=>{
   try {
     const userId = req.session.userid;
+
     const orders= await Order.find({userId}).populate({path:"products.productId"})
-    res.render('myOrders',{orders})
-    console.log(orders);
+
+    let totalDiscountPerProduct = 0;
+
+    for(const order of orders){
+
+    const totalAmount = order.totalAmount;
+
+    const discountPrice = order.discountedPrice;
+
+   
+
+    if(discountPrice>0){
+
+    const totalDiscount = totalAmount-discountPrice;
+
+    totalDiscountPerProduct = totalDiscount / order.products.length;
+
+    }
+  }
+
+    res.render('myOrders',{orders,totalDiscountPerProduct})
+
+   
+  
     
   } catch (error) {
     console.log(error.message);
@@ -581,13 +748,98 @@ const cancelOrder = async(req,res)=>{
 
     const targetProduct = order.products.find(product=>product.productId.toString()===productId)
 
-    targetProduct.productOrderStatus = 'cancelled';
+    targetProduct.productOrderStatus = 'Cancelled';
 
-    await order.save();
+     const cancel = await order.save();
+
+     res.json({success:true});
+
+     if(cancel){
+      ///////////Update Stock//////////
+        const quantity = targetProduct.quantity;
+        await Product.findOneAndUpdate({_id:productId},{$inc:{stock:quantity}})
+      ////////////////////////
+
+    
+
+     }
 
     
   } catch (error) {
 
+    console.log(error.message);
+  }
+}
+
+const returnOrder = async(req,res)=>{
+  try {
+    const productId = req.body.productId;
+    const orderId = req.body.orderId;
+
+    const product = await Product.find({_id:productId})
+    console.log(product);
+
+    const order = await Order.findOne({_id:orderId})
+
+    const targetProduct = order.products.find(product=>product.productId.toString()===productId)
+    console.log(targetProduct);
+    targetProduct.productOrderStatus = 'Returned';
+
+    const returned = await order.save();
+
+    
+
+
+    
+
+    if(returned){
+      
+      res.json({success:true})
+      ///////////Update Stock//////////
+        const quantity = targetProduct.quantity;
+        await Product.findOneAndUpdate({_id:productId},{$inc:{stock:quantity}})
+      /////////////////////////////////
+
+      const totalAmount = order.totalAmount;
+      console.log(totalAmount);
+      const discountAmount = order.discountedPrice;
+      console.log(discountAmount);
+      if(discountAmount>0){
+      const totalOffer = totalAmount-discountAmount;
+      console.log(totalOffer);
+      const offerperProduct = totalOffer/order.products.length;
+      console.log(offerperProduct);
+
+      const walletAmount = product[0].offerPrice*targetProduct.quantity - offerperProduct;
+      console.log(walletAmount);
+      console.log(typeof(walletAmount));
+      
+      // const wallet = new Wallet({
+
+      //   userId: req.session.userid,
+      //   balance:walletAmount,
+      //   type:"Credit",
+      //   amount:walletAmount,
+      //   date:"1-1-2024"
+
+
+
+      // })
+      // await wallet.save();
+
+      }else{
+        console.log("hiiiii");
+      }
+
+
+
+    }
+
+
+
+    
+  } catch (error) {
+    
     console.log(error.message);
   }
 }
@@ -621,5 +873,10 @@ module.exports = {
   loadOrders,
   orderDetail,
   userIsBlocked,
-  cancelOrder
+  cancelOrder,
+  returnOrder,
+  paymentVerify,
+  myWallet,
+  editAddress,
+  addressEdit
 };

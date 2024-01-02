@@ -24,6 +24,26 @@
     <link rel="stylesheet" href="css/style.css" type="text/css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2"></script>
     <style>
+        .coupon-container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .coupon {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+            text-align: left;
+        }
+
+        .coupon strong {
+            color: #333;
+        }
         .card {
           margin: 20px;
         }
@@ -219,15 +239,36 @@
                                     <% cart[0].items.forEach(product =>{ %>
                                     <li><%= product.productId.productName %><span>&#8377; <%= product.productId.offerPrice*product.quantity %></span></li>
                                     <% }); %>
+                                    <div class="checkout__input__checkbox">
+                                        <label for="coupon">
+                                            Apply coupons
+                                            <input type="checkbox" id="coupon">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                    </div>
                                 </ul>
                                 <ul class="checkout__total__all">
                                     <li id="subTotal">Subtotal <span>&#8377; <%= subtotal %></span></li>
+                                <div id="couponResult" style="display:none;">
+                                    <li><strong>Discount Price</strong><span id="amountDecreased">0</span></li>
+                                    <li><strong>Total Price</strong><span id="newSubtotal">0</span></li>
+                                </div>
+
+                                    
+
                                 </ul>
                                 <p><b>Select your payment method</b></p>
                                 <div class="checkout__input__checkbox">
                                     <label for="payment">
                                         Cash on delivery
                                         <input type="checkbox" id="payment">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+                                <div class="checkout__input__checkbox">
+                                    <label for="payment1">
+                                        Pay Online
+                                        <input type="checkbox" id="payment1">
                                         <span class="checkmark"></span>
                                     </label>
                                 </div>
@@ -320,6 +361,9 @@
     <!-- Search End -->
 
     <!-- Js Plugins -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+
     <script>
     function addAddress(){
         event.preventDefault();
@@ -385,6 +429,88 @@ if(data.success){
 
 }
 
+
+////////////////////////COUPON////////////////////////////////
+// Function to apply a coupon
+function applyCoupon(code, discountAmount) {
+        // Assume you have a subtotal element with an id of "subtotal"
+        const subtotalElement = document.getElementById('subTotal');
+        // Assume you have an element to display the amount decreased with an id of "amountDecreased"
+        const amountDecreasedElement = document.getElementById('amountDecreased');
+        // Assume you have an element to display the new subtotal with an id of "newSubtotal"
+        const newSubtotalElement = document.getElementById('newSubtotal');
+        // Assume you have an element to display the coupon result with an id of "couponResult"
+        const couponResultElement = document.getElementById('couponResult');
+        
+        // Parse the discount amount as a number (assuming it's a number with currency symbol)
+        const discount = parseFloat(discountAmount.replace(/[^0-9.-]+/g,"")); // Remove non-numeric characters
+
+        // Subtract the discount from the subtotal
+        const newSubtotal = parseFloat(subtotalElement.textContent.replace(/[^0-9.-]+/g,"")) - discount;
+
+        // Update the subtotal element with the new value
+        // subtotalElement.textContent = '&#8377;' + newSubtotal.toFixed(2);
+
+        // Update the amount decreased element with the discount amount
+        amountDecreasedElement.textContent ="₹"+ discount;
+
+        // Update the new subtotal element with the new subtotal value
+        newSubtotalElement.textContent = "₹"+newSubtotal;
+
+
+        // Display the coupon result
+        couponResultElement.style.display = 'block';
+
+        // You can add additional logic here, such as updating the UI or making an AJAX request to update the server-side subtotal.
+    }
+
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Get the checkbox element
+    const couponCheckbox = document.getElementById('coupon');
+     
+
+    // Add an event listener to the checkbox
+    couponCheckbox.addEventListener('change', function () {
+        // Check if the checkbox is checked
+        if (couponCheckbox.checked) {
+
+            const html = `
+            <% coupons.forEach((coupon)=>{ %>
+                <% if (coupon.minimumCartValue <= subtotal && coupon.listed==1) { %>
+                    <div class="coupon">
+                        <p><strong>Coupon Code:</strong><%= coupon.code %></p>
+                        <p><strong>Offer Price: </strong> &#8377;<%= coupon.discountAmount %></p>
+                        <button class="btn btn-dark btn-sm" onclick="applyCoupon('<%= coupon.code %>', '<%= coupon.discountAmount %>')">APPLY</button>
+                    </div>
+                    <% }else{ %>
+
+                    <div class="coupon">
+                        <p><strong>Coupon Code:</strong><%= coupon.code %></p>
+                        <p><strong>Offer Price: </strong> &#8377;<%= coupon.discountAmount %></p>
+                        <p style="color:red">Add &#8377;<%= coupon.minimumCartValue - subtotal %> more to avail this offer</p>
+                       
+                       
+                    </div>
+
+
+                        <% } %>
+                   <% }); %>
+                   `
+            // Show a SweetAlert when the checkbox is checked
+            Swal.fire({
+  html:html,
+  showCloseButton: true,
+  showConfirmButton: false
+
+});
+        }
+    });
+});
+
+
 ///////////////////////////////////DELETE ADDRESS///////////////////////////////////////////////////
 
 function deleteAddress(){
@@ -405,6 +531,10 @@ function deleteAddress(){
 function placeOrder(subtotal){
     const selectedRadio = document.querySelector('input[name="addressRadio"]:checked')
     const codCheckBox = document.getElementById('payment')
+    const onlineCheckbox = document.getElementById('payment1')
+    const newSubtotalElement = document.getElementById('newSubtotal');
+    let newSubtotalValue = parseFloat(newSubtotalElement.textContent.replace(/[^0-9.-]+/g, ""));
+   
      
     let addressId =null;
     if(selectedRadio){
@@ -417,10 +547,45 @@ function placeOrder(subtotal){
         let paymentMethod =null;
         if(codCheckBox.checked){
              paymentMethod ="Cash on delivery";
+        }else if(onlineCheckbox.checked){
+            paymentMethod = "Online payment"
         }else{
             alert("Please select the payment method")
             return false;
         }
+
+        if(paymentMethod=="Cash on delivery"){
+
+            if(newSubtotalValue>0){
+                fetch('/placeOrder',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({addressId,newSubtotalValue,subtotal,paymentMethod})
+        })
+        .then(response => {
+        if (!response.ok) {
+        throw new Error('Network response was not ok');
+       }
+        return response.json();
+    })
+    .then(data=>{
+       if(data.success){
+
+
+            window.location.href='/successOrder';
+            
+        }else{
+            console.log("order failed");
+
+        }
+    })
+    .catch(error => console.error('Error:', error));
+
+
+
+
+            }else{
+
 
         fetch('/placeOrder',{
             method:'POST',
@@ -434,13 +599,179 @@ function placeOrder(subtotal){
         return response.json();
     })
     .then(data=>{
-        if(data.success){
+       if(data.success){
+
+
             window.location.href='/successOrder';
+            
         }else{
             console.log("order failed");
+
         }
     })
     .catch(error => console.error('Error:', error));
+            }
+
+}else if(paymentMethod=="Online payment"){
+    if(newSubtotalValue>0){
+
+
+    fetch('/placeOrder',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({addressId,newSubtotalValue,subtotal,paymentMethod})
+        })
+        .then(response => {
+        if (!response.ok) {
+        throw new Error('Network response was not ok');
+       }
+        return response.json();
+    })
+    .then(data=>{
+       if(data.success){
+        const order = data.order;
+        const discount = data.discountPrice;
+        const user = data.user;
+        const address=data.addressId
+        const amount = order.amount;
+        var options = {
+    "key": "rzp_test_bvgGGt1MaFReGt", // Enter the Key ID generated from the Dashboard
+    "amount": amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+    "currency": "INR",
+    "name": "SOUND MAGIC",
+    "description": "Test Transaction",
+    "image": "/assets/images/logos/download.png",
+    "order_id":order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+    "handler": function (response){
+        verifyPayment(response,order)
+    },
+    "prefill": {
+        "name": user[0].firstname,
+        "email": user[0].email,
+        "contact":user[0].mobile
+    },
+    "notes": {
+        "address": address,
+        "discount":discount,
+    },
+    "theme": {
+        "color": "#3399cc"
+    }
+};
+var rzp1 = new Razorpay(options);
+rzp1.open();
+rzp1.on('payment.failed', function (response){
+        alert(response.error.code);
+        alert(response.error.description);
+        alert(response.error.source);
+        alert(response.error.step);
+        alert(response.error.reason);
+        alert(response.error.metadata.order_id);
+        alert(response.error.metadata.payment_id);
+});
+async function verifyPayment(payment,order){
+   fetch('/paymentVerify',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({payment,order,options})
+   }) .then(response=>response.json())
+    .then(data=>{
+        if(data.success){
+
+             window.location.href='/successOrder';
+            
+        }
+    })
+}
+            
+        }else{
+            console.log("order failed");
+
+        }
+    })
+    .catch(error => console.error('Error:', error));
+
+}else{
+    fetch('/placeOrder',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({addressId,subtotal,paymentMethod})
+        })
+        .then(response => {
+        if (!response.ok) {
+        throw new Error('Network response was not ok');
+       }
+        return response.json();
+    })
+    .then(data=>{
+       if(data.success){
+        const order = data.order;
+        const user = data.user;
+        const address=data.addressId
+        const amount = order.amount*100;
+        var options = {
+    "key": "rzp_test_bvgGGt1MaFReGt", // Enter the Key ID generated from the Dashboard
+    "amount": amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+    "currency": "INR",
+    "name": "SOUND MAGIC",
+    "description": "Test Transaction",
+    "image": "/assets/images/logos/download.png",
+    "order_id":order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+    "handler": function (response){
+        verifyPayment(response,order)
+    },
+    "prefill": {
+        "name": user[0].firstname,
+        "email": user[0].email,
+        "contact":user[0].mobile
+    },
+    "notes": {
+        "address": address,
+    },
+    "theme": {
+        "color": "#3399cc"
+    }
+};
+var rzp1 = new Razorpay(options);
+rzp1.open();
+rzp1.on('payment.failed', function (response){
+        alert(response.error.code);
+        alert(response.error.description);
+        alert(response.error.source);
+        alert(response.error.step);
+        alert(response.error.reason);
+        alert(response.error.metadata.order_id);
+        alert(response.error.metadata.payment_id);
+});
+async function verifyPayment(payment,order){
+   fetch('/paymentVerify',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({payment,order,options})
+   }) .then(response=>response.json())
+    .then(data=>{
+        if(data.success){
+
+            
+            window.location.href='/successOrder';
+            
+        }
+    })
+}
+            
+        }else{
+            console.log("order failed");
+
+        }
+    })
+    .catch(error => console.error('Error:', error));
+    
+
+}
+
+
+
+}
 }
 
 

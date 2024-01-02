@@ -65,6 +65,10 @@ user_route.get('/user-profile',auth.isLogin,auth.isBlocked,userController.loadPr
 user_route.post('/changePassword',auth.isLogin,auth.isBlocked,userController.changePassword)
 user_route.post('/addAddress',auth.isLogin,auth.isBlocked,userController.addAddress)
 user_route.post('/deleteAddress',auth.isLogin,auth.isBlocked,userController.deleteAddress)
+user_route.get('/myWallet',auth.isLogin,auth.isBlocked,userController.myWallet)
+user_route.get('/editAddress/:id',auth.isLogin,auth.isBlocked,userController.editAddress)
+user_route.post('/editAddress',auth.isLogin,auth.isBlocked,userController.addressEdit)
+
 
 
 
@@ -79,11 +83,15 @@ user_route.post('/removeProduct',auth.isLogin,auth.isBlocked,userController.remo
 user_route.get('/checkout',auth.isLogin,auth.isBlocked,userController.loadCheckout)
 user_route.post('/placeOrder',auth.isLogin,auth.isBlocked,userController.placeOrder)
 user_route.get('/successOrder',auth.isLogin,auth.isBlocked,userController.orderPlaced)
+user_route.post('/paymentVerify',auth.isLogin,auth.isBlocked,userController.paymentVerify)
 
 //Orders
 user_route.get('/myOrders',auth.isLogin,auth.isBlocked,userController.loadOrders)
 user_route.get('/orderDetail/:orderId/:productId',auth.isLogin,auth.isBlocked,userController.orderDetail)
 user_route.post('/cancelOrder',auth.isLogin,auth.isBlocked,userController.cancelOrder)
+user_route.post('/returnOrder',auth.isLogin,auth.isBlocked,userController.returnOrder)
+
+
 
 
 
