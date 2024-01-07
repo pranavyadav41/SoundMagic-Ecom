@@ -2,7 +2,7 @@ document.querySelectorAll('.action-button').forEach((button) => {
     button.addEventListener('click', () => {
         let userID = button.getAttribute('data-user-id');
         let currentState = button.getAttribute('data-state');
-        let actionText = currentState == 'Unblocked' ? 'Block' : 'Unblock';
+        let actionText = currentState == 'false' ? 'Block' : 'Unblock';
 
         // Show SweetAlert confirmation
         Swal.fire({
@@ -15,7 +15,7 @@ document.querySelectorAll('.action-button').forEach((button) => {
         }).then((result) => {
             if (result.isConfirmed) {
                 // Proceed with the action
-                let url = currentState == 'Unblocked' ? `/admin/block-user/${userID}` : `/admin/unblock-user/${userID}`;
+                let url = currentState == 'false' ? `/admin/block-user/${userID}` : `/admin/unblock-user/${userID}`;
 
                 fetch(url, {
                     method: 'PATCH',
@@ -27,12 +27,12 @@ document.querySelectorAll('.action-button').forEach((button) => {
                 }).then(data => {
                     if (data.message) {
                         // Update button state based on the response
-                        if (currentState == 'Unblocked') {
-                            button.setAttribute('data-state', 'Blocked');
+                        if (currentState == 'false') {
+                            button.setAttribute('data-state', 'true');
                             button.textContent = 'Unblock';
                             button.classList.replace('btn-danger', 'btn-success');
                         } else {
-                            button.setAttribute('data-state', 'Unblocked');
+                            button.setAttribute('data-state', 'false');
                             button.textContent = 'Block';
                             button.classList.replace('btn-success', 'btn-danger');
                         }

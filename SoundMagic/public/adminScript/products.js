@@ -5,7 +5,7 @@ document.querySelectorAll('.unlist-button').forEach((button) => {
         let currentState = button.getAttribute('data-state')
         let url;
 
-        if (currentState == 'Unlisted') {
+        if (currentState == 'false') {
             url = `/admin/list-product/${id}`
 
         } else {
@@ -20,13 +20,13 @@ document.querySelectorAll('.unlist-button').forEach((button) => {
             return response.json();
         }).then(data => {
             if (data.message) {
-                if (currentState == 'Unlisted') {
-                    button.setAttribute('data-state', 'Listed')
+                if (currentState == 'false') {
+                    button.setAttribute('data-state', 'true')
                     button.textContent = 'UnList'
                     button.classList.replace('btn-danger', 'btn-success')
 
                 } else {
-                    button.setAttribute('data-state', 'Unlisted')
+                    button.setAttribute('data-state', 'false')
                     button.textContent = 'List'
                     button.classList.replace('btn-success', 'btn-danger')
 

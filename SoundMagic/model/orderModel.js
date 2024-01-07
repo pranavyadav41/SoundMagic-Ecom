@@ -52,11 +52,11 @@ const orderSchema = new mongoose.Schema({
   OrderStatus: {
     type: String,
     default: "Order placed",
-    require: true,
+    required: true,
   },
   OrderDate: {
-    type: Date,
-    default: Date.now,
+    type:Date,
+    default:Date.now(),
   },
   totalAmount: {
     type: Number,
@@ -68,7 +68,7 @@ const orderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    require: true,
+    required: true,
   },
 });
 

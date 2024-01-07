@@ -119,8 +119,8 @@
                 <div class="col-lg-3">
                     <div class="shop__sidebar">
                         <div class="shop__sidebar__search">
-                            <form action="#">
-                                <input type="text" placeholder="Search...">
+                            <form>
+                                <input type="text" name="search" placeholder="Search...">
                                 <button type="submit"><span class="icon_search"></span></button>
                             </form>
                         </div>
@@ -159,10 +159,10 @@
                             <div class="col-lg-6 col-md-6 col-sm-6">
                                 <div class="shop__product__option__right">
                                     <p>Sort by Price:</p>
-                                    <select>
-                                        <option value="">Low To High</option>
-                                        <option value="">$0 - $55</option>
-                                        <option value="">$55 - $100</option>
+                                    <select id="priceSort">
+                                        <option value="asc">Low To High</option>
+                                        <option value="0-55">&#8377;200 - &#8377;1000</option>
+                                        <option value="55-100">&#8377;1500 - &#8377;3000</option>
                                     </select>
                                 </div>
                             </div>
@@ -177,9 +177,7 @@
                                             <img  src="/productImages/<%= product.image[0] %>" style="height:262.5pxp; width:260px;" alt=""> 
                                         </a>    
                                         <ul class="product__hover">
-                                            <li><a href="#"><img src="img/icon/heart.png" alt=""></a></li>
-                                            <li><a href="#"><img src="img/icon/compare.png" alt=""> <span>Compare</span></a></li>
-                                            <li><a href="#"><img src="img/icon/search.png" alt=""></a></li>
+                                            <li><a href="" onclick="addToWish('<%= product._id %>')"><img src="img/icon/heart.png" alt=""></a></li>
                                         </ul>
                                     
                                     </div>
@@ -366,14 +364,79 @@ function addToCart(productId) {
     });
 }
 
+function addToWish(productId) {
+    event.preventDefault();
+    fetch('/addToWish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: productId })
+    })
+    .then(response => {
+        if (!response.ok) {
+            response.json().then(data=>{
+                if(data.error==='Product already added to wishlist'){
+            Swal.fire({
+          icon: 'info',
+          title: 'Item Already in wishlist',
+          showConfirmButton: false,
+          timer: 1500,
+        });
+            
+        }else if(data.error==="Product is out of stock"){
+            Swal.fire({
+          icon: 'error',
+          title: 'The product is out of stock',
+          showConfirmButton: false,
+          timer: 1500,
+        });
 
+        }
+    })
+           
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+          icon: 'success',
+          title: 'Product added to wishlist',
+          showConfirmButton: false,
+          timer: 1500,
+        });
+            
 
+            // Optionally, update your UI or trigger additional actions
+        }else{
+           
+            console.error("Failed to add to wishlist:", data.message);
+            // Handle the error, show a message, or perform other actions
 
-
-
-
-
-    </script>
+        }
+    })
+    .catch(error => {
+        console.error("Error during addToWish:", error.message);
+        // Log the error or handle it appropriately
+    });
+}
+</script>
+<script>
+    document.getElementById('priceSort').addEventListener('change', function () {
+        console.log("HIIII");
+      const selectedOption = this.value;
+      const url = `/shop?search=${encodeURIComponent(search)}&id=${encodeURIComponent(categoryId)}&sort=${encodeURIComponent(selectedOption)}`;
+  
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+    });
+  </script>
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/jquery.nice-select.min.js"></script>

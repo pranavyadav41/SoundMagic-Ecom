@@ -1,6 +1,7 @@
 //For rendering signup page
 
 const User = require("../model/userModel");
+const mongoose = require('mongoose');
 require('dotenv').config({ path: 'config/.env' });
 const sendMail = require("../services/otpVerification");
 const crypto = require('crypto')
@@ -12,6 +13,8 @@ const Order = require("../model/orderModel")
 const Razorpay = require("razorpay")
 const Coupon = require("../model/couponModel")
 const Wallet = require("../model/walletModel")
+const Wishlist = require("../model/wishlistModel")
+const Banner = require("../model/bannerModel")
 var instance = new Razorpay({ key_id:process.env.KEY_ID, key_secret:process.env.KEY_SECRET })
 
 
@@ -191,22 +194,35 @@ const userLogin = async (req, res) => {
 
 const loadHome = async (req, res) => {
   try {
-    res.render("index");
+    const products = await Product.find({ is_listed: true });
+    const banners = await Banner.find({isListed:true});
+
+    res.render("index",{products,banners});
+
   } catch (error) {
-    console.log("error.message");
+    console.log(error.message);
   }
 };
 
 const loadShop = async (req, res) => {
   try {
+    var search = '';
+    if(req.query.search){
+        search = req.query.search;
+    }
+
+    let sortOption = {};
+
     if (req.query.id) {
       const id = req.query.id;
-      const products = await Product.find({ is_listed: true, category: id });
       const category = await Category.find({ isListed: true });
+      const products = await Product.find({ is_listed: true,category:id,productName: { $regex: '.*'+search+'.*',$options:'i'} }).sort(sortOption);
       res.render("shop", { category, products });
     } else {
-      const products = await Product.find({ is_listed: true });
+      const products = await Product.find({ is_listed: true,productName: { $regex: '.*'+search+'.*',$options:'i'} }).sort(sortOption);
+     
       const category = await Category.find({ isListed: true });
+     
       res.render("shop", { products, category });
     }
   } catch (error) {
@@ -351,6 +367,7 @@ const changePassword = async (req, res) => {
 const addToCart = async (req, res) => {
   try {
     const productId = req.body.productId;
+    console.log(typeof(productId));
     const userId = req.session.userid;
     const quantity = 1;
     let product = await Product.findOne({ _id: productId });
@@ -457,7 +474,10 @@ const deleteAddress =async(req,res)=>{
 const myWallet = async(req,res)=>{
   try {
 
-    res.render('myWallet')
+    const wallet = await Wallet.find();
+    console.log(wallet);
+
+    res.render('myWallet',{wallet})
     
   } catch (error) {
     console.log(error.message);
@@ -523,6 +543,7 @@ const loadCheckout = async(req,res)=>{
     const userid = req.session.userid;
     const cart = await Cart.find({userId:userid}).populate("items.productId")
     const coupons = await Coupon.find({listed:1})
+    const wallet = await Wallet.find({userId:userid})
     ////CALCULATING SUBTOTAL////////////
     let subtotal = 0;
     cart[0].items.forEach(item=>{
@@ -531,7 +552,7 @@ const loadCheckout = async(req,res)=>{
     ////////////////////////////////////
     const address = await Address.find({userId:userid})
 
-    res.render('checkout',{address,cart,subtotal,coupons})
+    res.render('checkout',{address,cart,subtotal,coupons,wallet})
     
   } catch (error) {
     console.log(error.message);
@@ -552,6 +573,12 @@ const placeOrder = async(req,res)=>{
     const address = await Address.find({_id:addressId}).populate('address')
     const cart = await Cart.find({userId:userId})
     const products = cart[0].items;
+    const date = new Date();
+  
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();  
+    let currentDate = `${day}-${month}-${year}`;
 
     if(paymentMethod==="Cash on delivery"){
 
@@ -604,6 +631,79 @@ const placeOrder = async(req,res)=>{
    
 
 
+  }else if(paymentMethod==="Paid through wallet"){
+
+    console.log("hello");
+
+    const userOrder = new Order({
+      userId:userId,
+      shippingAddress:{
+        fullname:address[0].fullname,
+        mobile:address[0].mobile,
+        address:address[0].address,
+        pincode:address[0].pincode,
+        city:address[0].city,
+        state:address[0].State,
+
+      },
+      products:products,
+      totalAmount:subtotal,
+      discountedPrice:discountPrice,
+      paymentMethod:paymentMethod,
+    })
+
+    const order=await userOrder.save();
+    
+    if(order){
+      await Cart.findOneAndUpdate({userId:userId},{$set:{items:[]}});
+      //////Update Stock//////
+      for(const product of products){
+        const productId= product.productId;
+        const quantity = product.quantity;
+        await Product.findOneAndUpdate({_id:productId},{$inc:{stock:-quantity}})
+      }
+      ////////////////////////
+    }
+
+
+    let wallet = await Wallet.findOne({userId:req.session.userid})
+
+    if(discountPrice==0){
+
+     wallet.history.push({
+       type:"Debit",
+       amount:subtotal,
+       date:"1-1-2024" }
+
+     )
+     wallet.balance = wallet.history.reduce((total, transaction) => {
+      return total + (transaction.type === "Credit" ? transaction.amount : -transaction.amount);
+  }, 0);
+     await wallet.save();
+     res.json({success:true})
+
+}else if(discountPrice>0){
+
+  wallet.history.push({
+    type:"Debit",
+    amount:discountPrice,
+    date:"1-1-2024" }
+
+  )
+  wallet.balance = wallet.history.reduce((total, transaction) => {
+   return total + (transaction.type === "Credit" ? transaction.amount : -transaction.amount);
+}, 0);
+  await wallet.save();
+  res.json({success:true})
+
+}
+   
+
+
+   
+
+  }else if(paymentMethod==="Online and Wallet"){
+
   }
 
 
@@ -629,6 +729,12 @@ const paymentVerify = async(req,res)=>{
     let hmac = crypto.createHmac('sha256',process.env.KEY_SECRET)
     hmac.update(req.body.payment.razorpay_order_id+'|'+req.body.payment.razorpay_payment_id);
     hmac = hmac.digest('hex');
+    const date = new Date();
+  
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();  
+    let currentDate = `${day}-${month}-${year}`;
 
     if(hmac===req.body.payment.razorpay_signature){
       console.log("Payment successfull");
@@ -742,6 +848,9 @@ const cancelOrder = async(req,res)=>{
   try {
 
     const productId = req.body.productId;
+
+    const product = await Product.find({_id:productId})
+    
     const orderId = req.body.orderId;
 
     const order = await Order.findOne({_id:orderId})
@@ -759,9 +868,167 @@ const cancelOrder = async(req,res)=>{
         const quantity = targetProduct.quantity;
         await Product.findOneAndUpdate({_id:productId},{$inc:{stock:quantity}})
       ////////////////////////
+      if(order.paymentMethod == "Online payment"){
+        const totalAmount = order.totalAmount;
+        const discountAmount = order.discountedPrice;
+        const date = new Date();
+  
+        let day = date.getDate();
+        let month = date.getMonth() + 1;
+        let year = date.getFullYear();  
+        let currentDate = `${day}-${month}-${year}`;
+        if(discountAmount>0){
+        const totalOffer = totalAmount-discountAmount;
+        const offerperProduct = totalOffer/order.products.length;
+  
+        const walletAmount = product[0].offerPrice*targetProduct.quantity - offerperProduct;
 
-    
+       let wallet = await Wallet.findOne({userId:req.session.userid})
 
+       if(!wallet){
+        
+         wallet = new Wallet({
+  
+          userId: req.session.userid,
+          balance:walletAmount,
+          history:[{type:"Credit",
+          amount:walletAmount,
+         }]
+  
+  
+  
+        })
+        await wallet.save();
+
+      }else{
+        wallet.history.push({
+          type:"Credit",
+          amount:walletAmount,
+         }
+
+        )
+
+        wallet.balance = wallet.history.reduce((total, transaction) => {
+          return total + (transaction.type === "Credit" ? transaction.amount : -transaction.amount);
+      }, 0);
+        await wallet.save();
+      }
+  
+        }else{
+          const walletAmount = product[0].offerPrice*targetProduct.quantity;
+          let wallet = await Wallet.findOne({userId:req.session.userid})
+
+          if(!wallet){
+           
+            wallet = new Wallet({
+     
+             userId: req.session.userid,
+             balance:walletAmount,
+             history:[{type:"Credit",
+             amount:walletAmount,
+              }]
+     
+     
+     
+           })
+           await wallet.save();
+   
+         }else{
+           wallet.history.push({
+             type:"Credit",
+             amount:walletAmount,
+              }
+   
+           )
+           wallet.balance = wallet.history.reduce((total, transaction) => {
+            return total + (transaction.type === "Credit" ? transaction.amount : -transaction.amount);
+        }, 0);
+           await wallet.save();
+         }
+  
+        }
+      }else if(order.paymentMethod == "Paid through wallet"){
+
+        const totalAmount = order.totalAmount;
+        const discountAmount = order.discountedPrice;
+        const date = new Date();
+  
+        let day = date.getDate();
+        let month = date.getMonth() + 1;
+        let year = date.getFullYear();  
+        let currentDate = `${day}-${month}-${year}`;
+        if(discountAmount>0){
+        const totalOffer = totalAmount-discountAmount;
+        const offerperProduct = totalOffer/order.products.length;
+  
+        const walletAmount = product[0].offerPrice*targetProduct.quantity - offerperProduct;
+
+       let wallet = await Wallet.findOne({userId:req.session.userid})
+
+       if(!wallet){
+        
+         wallet = new Wallet({
+  
+          userId: req.session.userid,
+          balance:walletAmount,
+          history:[{type:"Credit",
+          amount:walletAmount,
+           }]
+  
+  
+  
+        })
+        await wallet.save();
+
+      }else{
+        wallet.history.push({
+          type:"Credit",
+          amount:walletAmount,
+         }
+
+        )
+
+        wallet.balance = wallet.history.reduce((total, transaction) => {
+          return total + (transaction.type === "Credit" ? transaction.amount : -transaction.amount);
+      }, 0);
+        await wallet.save();
+      }
+  
+        }else{
+          const walletAmount = product[0].offerPrice*targetProduct.quantity;
+          let wallet = await Wallet.findOne({userId:req.session.userid})
+
+          if(!wallet){
+           
+            wallet = new Wallet({
+     
+             userId: req.session.userid,
+             balance:walletAmount,
+             history:[{type:"Credit",
+             amount:walletAmount,
+             }]
+     
+     
+     
+           })
+           await wallet.save();
+   
+         }else{
+           wallet.history.push({
+             type:"Credit",
+             amount:walletAmount,
+            }
+   
+           )
+           wallet.balance = wallet.history.reduce((total, transaction) => {
+            return total + (transaction.type === "Credit" ? transaction.amount : -transaction.amount);
+        }, 0);
+           await wallet.save();
+         }
+  
+        }
+
+      }
      }
 
     
@@ -801,34 +1068,80 @@ const returnOrder = async(req,res)=>{
       /////////////////////////////////
 
       const totalAmount = order.totalAmount;
-      console.log(totalAmount);
       const discountAmount = order.discountedPrice;
-      console.log(discountAmount);
+      const date = new Date();
+
+      let day = date.getDate();
+      let month = date.getMonth() + 1;
+      let year = date.getFullYear();  
+      let currentDate = `${day}-${month}-${year}`;
       if(discountAmount>0){
       const totalOffer = totalAmount-discountAmount;
-      console.log(totalOffer);
       const offerperProduct = totalOffer/order.products.length;
-      console.log(offerperProduct);
 
       const walletAmount = product[0].offerPrice*targetProduct.quantity - offerperProduct;
-      console.log(walletAmount);
-      console.log(typeof(walletAmount));
-      
-      // const wallet = new Wallet({
+      let wallet = await Wallet.findOne({userId:req.session.userid})
 
-      //   userId: req.session.userid,
-      //   balance:walletAmount,
-      //   type:"Credit",
-      //   amount:walletAmount,
-      //   date:"1-1-2024"
+      if(!wallet){
+       
+        wallet = new Wallet({
+ 
+         userId: req.session.userid,
+         balance:walletAmount,
+         history:[{type:"Credit",
+         amount:walletAmount,
+         }]
+ 
+ 
+ 
+       })
+       await wallet.save();
 
+     }else{
+       wallet.history.push({
+         type:"Credit",
+         amount:walletAmount,
+          }
 
-
-      // })
-      // await wallet.save();
+       )
+       wallet.balance = wallet.history.reduce((total, transaction) => {
+        return total + (transaction.type === "Credit" ? transaction.amount : -transaction.amount);
+    }, 0);
+       await wallet.save();
+     }
 
       }else{
-        console.log("hiiiii");
+        const walletAmount = product[0].offerPrice*targetProduct.quantity;
+        let wallet = await Wallet.findOne({userId:req.session.userid})
+
+        if(!wallet){
+         
+          wallet = new Wallet({
+   
+           userId: req.session.userid,
+           balance:walletAmount,
+           history:[{type:"Credit",
+           amount:walletAmount,
+          }]
+   
+   
+   
+         })
+         await wallet.save();
+ 
+       }else{
+         wallet.history.push({
+           type:"Credit",
+           amount:walletAmount,
+           }
+ 
+         )
+         wallet.balance = wallet.history.reduce((total, transaction) => {
+          return total + (transaction.type === "Credit" ? transaction.amount : -transaction.amount);
+      }, 0);
+         await wallet.save();
+       }
+
       }
 
 
@@ -840,6 +1153,82 @@ const returnOrder = async(req,res)=>{
     
   } catch (error) {
     
+    console.log(error.message);
+  }
+}
+
+const loadWishlist = async(req,res)=>{
+  try {
+
+    const wishlist = await Wishlist.find().populate({path:"products.productId"})
+
+    res.render('wishlist',{wishlist});
+
+
+    
+  } catch (error) {
+
+    console.log(error.message);
+  }
+}
+
+const addToWishList = async(req,res)=>{
+
+    try {
+      const productId = req.body.productId;
+      console.log(typeof(productId));
+      const userId = req.session.userid;
+      const quantity = 1;
+      let product = await Product.findOne({ _id: productId });
+      const stock = product.stock;
+  
+      let wishList = await Wishlist.findOne({ userId:userId });
+  
+      if (!wishList) {
+        wishList = new Wishlist({
+          userId: userId,
+          products: [{productId }],
+        });
+      } else {
+        // Check if the product is already in the wishlist
+        const checkItem = wishList.products.find((product) =>
+          product.productId.equals(productId)
+        );
+  
+        if (checkItem) {
+          // If the product is already in the wishlist, update the quantity
+          return res.status(400).json({ error: "Product already added to wishlist" });
+        } else {
+          // If the product is not in the cart, add it
+          wishList.products.push({
+            productId
+          });
+          
+          
+        }
+        
+        
+       
+      }
+  
+      await wishList.save();
+      res.json({ success: true, message: "Item added to cart successfully" });
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
+const removeWish  = async(req,res)=>{
+  try {
+
+    const remove = await Wishlist.findOneAndUpdate({'products.productId':req.body.productId},{$pull:{products:{productId:req.body.productId}}},{new:true})
+
+    if(remove){
+      res.json({success:true})
+    }
+    
+  } catch (error) {
     console.log(error.message);
   }
 }
@@ -878,5 +1267,8 @@ module.exports = {
   paymentVerify,
   myWallet,
   editAddress,
-  addressEdit
+  addressEdit,
+  loadWishlist,
+  addToWishList,
+  removeWish
 };

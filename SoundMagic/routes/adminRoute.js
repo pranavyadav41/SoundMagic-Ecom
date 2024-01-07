@@ -23,6 +23,10 @@ admin_route.get('/logout',auth.isLogin,adminController.adminLogout)
 //Dashboard
 
 admin_route.get('/dashboard',auth.isLogin,adminController.loadDashboard)
+admin_route.post('/dashboard',auth.isLogin,adminController.salesReport)
+admin_route.get('/download-pdf',auth.isLogin,adminController.downloadPdf)
+admin_route.get('/download-csv',auth.isLogin,adminController.downloadCsv)
+
 
 //Users
 
@@ -91,6 +95,16 @@ admin_route.post('/editCoupon',auth.isLogin,productController.couponEdit)
 admin_route.patch('/list-coupon/:id',auth.isLogin,productController.listCoupon);
 admin_route.patch('/unlist-coupon/:id',auth.isLogin,productController.unlistCoupon);
 
+//BANNER
+
+admin_route.get('/banner',auth.isLogin,productController.loadBanner)
+admin_route.get('/addBanner',auth.isLogin,productController.addBanner)
+admin_route.post('/addBanner',Multer.single('image'),auth.isLogin,productController.bannerAdd)
+admin_route.get('/editBanner/:id',auth.isLogin,productController.editBanner)
+admin_route.post('/bannerEdit/:id',auth.isLogin,Multer.single('image'),productController.bannerEdit)
+
+admin_route.patch('/list-banner/:id',auth.isLogin,productController.listBanner);
+admin_route.patch('/unlist-banner/:id',auth.isLogin,productController.unlistBanner);
 
 
 

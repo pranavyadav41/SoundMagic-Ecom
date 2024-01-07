@@ -12,6 +12,8 @@ const walletSchema = new mongoose.Schema({
         required:true,
         default:"0"
     },
+    history:[
+        {
     type:{
         type:String,
         required:true
@@ -21,9 +23,11 @@ const walletSchema = new mongoose.Schema({
         required:true
     },
     date:{
-        type:String,
-        required:true
+        type:Date,
+        default:Date.now()
     }
+}
+],
 
 })
 module.exports = mongoose.model("wallet", walletSchema);

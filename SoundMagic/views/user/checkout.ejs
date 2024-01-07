@@ -272,6 +272,18 @@
                                         <span class="checkmark"></span>
                                     </label>
                                 </div>
+
+                                <% if(wallet[0] && wallet[0].balance>=subtotal){ %>
+                               
+                                <div class="checkout__input__checkbox">
+                                    <label for="wallet">
+                                        Use Wallet money     <span style="color: green;">Balance: &#8377;<%= wallet[0].balance %></span>
+                                        <input type="checkbox" id="wallet">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+                                <% } %>
+                               
                                 <button type="" class="site-btn" onclick="placeOrder('<%= subtotal %>')">PLACE ORDER</button>
                             </div>
                         </div>
@@ -532,7 +544,9 @@ function placeOrder(subtotal){
     const selectedRadio = document.querySelector('input[name="addressRadio"]:checked')
     const codCheckBox = document.getElementById('payment')
     const onlineCheckbox = document.getElementById('payment1')
+    const walletCheckbox =document.getElementById('wallet')
     const newSubtotalElement = document.getElementById('newSubtotal');
+    const couponCheckbox = document.getElementById("coupon") 
     let newSubtotalValue = parseFloat(newSubtotalElement.textContent.replace(/[^0-9.-]+/g, ""));
    
      
@@ -543,16 +557,48 @@ function placeOrder(subtotal){
             alert("please select the shipping address")
             return false;
         }
-         
+
+          // Check if more than one payment method is selected
+    if (
+        (codCheckBox.checked && onlineCheckbox.checked) ||
+        (codCheckBox.checked && walletCheckbox.checked) ||
+        (onlineCheckbox.checked && walletCheckbox.checked)
+    ) {
+        alert("Please select only one payment method");
+        return false;
+    }
+
+
+    
+
+
         let paymentMethod =null;
         if(codCheckBox.checked){
              paymentMethod ="Cash on delivery";
         }else if(onlineCheckbox.checked){
             paymentMethod = "Online payment"
+
+
+        }else if(walletCheckbox.checked){
+
+            paymentMethod = "Paid through wallet"
+        
         }else{
             alert("Please select the payment method")
             return false;
         }
+
+
+        if (couponCheckbox.checked) {
+        // Check if coupon is used with incompatible payment methods
+        if ((codCheckBox.checked || walletCheckbox.checked) && onlineCheckbox.checked) {
+            alert("Coupon cannot be used with Cash on Delivery or Wallet when paying online");
+            return false;
+        }
+    }
+
+
+        
 
         if(paymentMethod=="Cash on delivery"){
 
@@ -768,6 +814,68 @@ async function verifyPayment(payment,order){
     
 
 }
+
+
+
+}else if(paymentMethod=="Paid through wallet"){
+
+
+    if(newSubtotalValue>0){
+                fetch('/placeOrder',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({addressId,newSubtotalValue,subtotal,paymentMethod})
+        })
+        .then(response => {
+        if (!response.ok) {
+        throw new Error('Network response was not ok');
+       }
+        return response.json();
+    })
+    .then(data=>{
+       if(data.success){
+
+
+            window.location.href='/successOrder';
+            
+        }else{
+            console.log("order failed");
+
+        }
+    })
+    .catch(error => console.error('Error:', error));
+
+
+
+
+            }else{
+
+
+        fetch('/placeOrder',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({addressId,subtotal,paymentMethod})
+        })
+        .then(response => {
+        if (!response.ok) {
+        throw new Error('Network response was not ok');
+       }
+        return response.json();
+    })
+    .then(data=>{
+       if(data.success){
+
+
+            window.location.href='/successOrder';
+            
+        }else{
+            console.log("order failed");
+
+        }
+    })
+    .catch(error => console.error('Error:', error));
+            }
+
 
 
 

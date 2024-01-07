@@ -285,7 +285,7 @@
               <tr>
                 <td><%= index + 1 %></td>
                 <td><%= order._id %></td>
-                <td><%= order.OrderDate %></td>
+                <td><%= order.OrderDate.toLocaleDateString() %></td>
                 <td><%= order.userId.firstname %></td>
                 <td>₹<%= order.paymentMethod %></td>
                 <td>₹<%= order.totalAmount %></td>

@@ -222,7 +222,7 @@
           <th>ORDERED</th>
           <th>STATUS</th>
           <th>TOTAL</th>
-          <th>OFFER PRICE</th>
+          <th>COUPON OFFER</th>
           <th>METHOD</th>
           <th>MANAGE</th>
         </tr>
@@ -234,7 +234,7 @@
          <tr>
           <td><img src="productImages/<%= product.productId.image[0] %>" alt="" width="50" style="width:80px; height:80px;"></td>
           <td><%= product.productId.productName %></td>
-          <td><%= order.OrderDate %></td>
+          <td><%= order.OrderDate.toLocaleDateString() %></td>
           <td class="status-shipped"><%= product.productOrderStatus %></td>
           <td>&#8377;<%= product.productId.offerPrice*product.quantity %></td>
           <% if (order.discountedPrice != 0){%>

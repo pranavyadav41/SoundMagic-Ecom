@@ -75,6 +75,14 @@
         border-radius: 4px;
         cursor: pointer;
     }
+    .coupon-button{
+      padding: 8px 16px;
+      border-radius: 10px;
+      background-color: #2ecc71;
+      border: none;
+      color: #fff;
+
+    }
 </style>
 
 <body>
@@ -238,7 +246,7 @@
                         <td>&#8377;<%= coupon.minimumCartValue %></td>
                         <td>
                           <button class="btn btn-dark"><a href="/admin/editCoupon/<%= coupon._id  %>" style="color: #fff;">Edit</a></button>
-                          <button class="coupon-button" data-coupon-id ="<%= coupon._id %>" data-state="<%= coupon.listed ? '0' : '1' %>" ><%= coupon.listed ? 'Unlist' : 'List' %></button>
+                          <button class="coupon-button" data-coupon-id ="<%= coupon._id %>" data-state="<%= coupon.listed ? 'true' : 'false' %>" ><%= coupon.listed ? 'Unlist' : 'List' %></button>
                         </td>
                     </tr>
                     <% }); %>
@@ -247,7 +255,7 @@
             </table>
         </div>
     </div>
-   
+    
 
    
      
@@ -265,7 +273,7 @@
         let currentState = button.getAttribute('data-state')
         let url;
 
-        if (currentState == 'Unlisted') {
+        if (currentState == 'false') {
             url = `/admin/list-coupon/${id}`
 
         } else {
@@ -280,13 +288,13 @@
             return response.json();
         }).then(data => {
             if (data.message) {
-                if (currentState == 'Unlisted') {
-                    button.setAttribute('data-state', 'Listed')
+                if (currentState == 'false') {
+                    button.setAttribute('data-state', 'true')
                     button.textContent = 'UnList'
                     button.classList.replace('btn-danger', 'btn-success')
 
                 } else {
-                    button.setAttribute('data-state', 'Unlisted')
+                    button.setAttribute('data-state', 'false')
                     button.textContent = 'List'
                     button.classList.replace('btn-success', 'btn-danger')
 

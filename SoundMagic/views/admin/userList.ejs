@@ -174,7 +174,7 @@
                     <td><%= user.mobile %></td>
                     <td><%= user.isVerified ? 'Yes' : 'No' %></td>
                     <td>
-                      <button class="action-button"  data-user-id ="<%= user._id %>"  data-state="<%= user.isBlocked ? 'UnBlocked' : 'Blocked' %>">
+                      <button class="action-button"  data-user-id ="<%= user._id %>"  data-state="<%= user.isBlocked ? 'true' : 'false' %>">
                           <%= user.isBlocked ? 'Unblock' : 'Block' %>
                       </button>
                       <!-- Add other action buttons as needed -->

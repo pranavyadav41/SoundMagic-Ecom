@@ -2,7 +2,9 @@ const Product = require('../model/productModel')
 const Category = require('../model/categoryModel')
 const Order = require('../model/orderModel')
 const Coupon = require('../model/couponModel')
+const Banner = require('../model/bannerModel')
 const moment = require('moment')
+const { findByIdAndUpdate } = require('../model/userModel')
 const now = moment();
 
 const loadProduct = async(req,res)=>{
@@ -11,12 +13,31 @@ const loadProduct = async(req,res)=>{
         if(req.query.search){
             search = req.query.search;
         }
+
+        var page = 1;
+        if(req.query.page){
+            page = req.query.page;
+        }
+
+        const limit = 4;
+
+
     
         
         const products = await Product.find({
-             productName: { $regex: search, $options: 'i' }
+             productName: { $regex: '.*'+search+'.*',$options:'i'}
         }).populate('category')
-        res.render('products',{products})
+        .limit(limit*1)
+        .skip((page-1)*limit)
+        .exec()
+
+        const count = await Product.find({
+            productName: { $regex: '.*'+search+'.*',$options:'i'}
+       }).countDocuments();
+
+
+
+        res.render('products',{products,totalPages:Math.ceil(count/limit),currentPage:page,previous:page-1,next:page+1})
     } catch (error) {
         console.log(error.message);
     }
@@ -348,6 +369,169 @@ const unlistCoupon = async(req,res)=>{
 
 }
 
+const loadBanner = async(req,res)=>{
+    try {
+
+        const banners = await Banner.find();
+
+        res.render('Banner',{banners})
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const addBanner = async(req,res)=>{
+    try {
+
+        res.render("addBanner")
+
+
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const bannerAdd = async(req,res)=>{
+    try{
+
+        let filename = req.file.filename;
+
+
+        const newBanner = new Banner({
+            title:req.body.title,
+            description:req.body.description,
+            image:filename
+        })
+
+        await newBanner.save();
+        res.redirect("/admin/banner")
+
+
+
+
+
+
+
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const editBanner = async(req,res)=>{
+    try {
+
+        const bannerId = req.params.id;
+
+        const banner = await Banner.find({_id:bannerId});
+
+
+        res.render('editBanner',{banner})
+
+
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const bannerEdit = async(req,res)=>{
+    try{
+
+        let bannerId = req.params.id;
+
+        if(req.file){
+            let bannerUpdate = await Banner.findByIdAndUpdate({_id:bannerId},{
+                $set:{
+                    title:req.body.title,
+                    description:req.body.description,
+                    image:req.file.filename
+
+                }
+            })
+            await bannerUpdate.save();
+            res.redirect("/admin/banner")
+        }else{
+            let bannerUpdate = await Banner.findByIdAndUpdate({_id:bannerId},{
+                $set:{
+                    title:req.body.title,
+                    description:req.body.description,
+                }
+            })
+
+            await bannerUpdate.save();
+            res.redirect("/admin/banner")
+
+
+
+        }
+
+
+
+
+
+
+
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const listBanner = async(req,res)=>{
+    try {
+
+        const id = req.params.id
+        const banner = await Banner.findOne({ _id: id })
+        if (!banner) {
+            return res.status(404).json({ error: 'Coupon not found' });
+        }
+        banner.isListed = true;
+        await banner.save()
+        res.json({ message: 'Banner listed successfully' })
+
+
+
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const unlistBanner = async(req,res)=>{
+    try {
+
+        const id = req.params.id
+
+        const banner = await Banner.findOne({ _id: id })
+        if (!banner) {
+            return res.status(404).json({ error: 'Banner not found' });
+        }
+        banner.isListed = false;
+        await banner.save()
+        res.json({ message: 'Banner Unlisted successfully' })
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
 module.exports = {
     loadProduct,
     loadAddProduct,
@@ -365,5 +549,12 @@ module.exports = {
     editCoupon,
     couponEdit,
     listCoupon,
-    unlistCoupon
+    unlistCoupon,
+    loadBanner,
+    addBanner,
+    bannerAdd,
+    editBanner,
+    bannerEdit,
+    listBanner,
+    unlistBanner
 }

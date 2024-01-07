@@ -91,6 +91,12 @@ user_route.get('/orderDetail/:orderId/:productId',auth.isLogin,auth.isBlocked,us
 user_route.post('/cancelOrder',auth.isLogin,auth.isBlocked,userController.cancelOrder)
 user_route.post('/returnOrder',auth.isLogin,auth.isBlocked,userController.returnOrder)
 
+//Wishlist
+user_route.get('/wishlist',auth.isLogin,auth.isBlocked,userController.loadWishlist)
+user_route.post('/addToWish',auth.isLogin,auth.isBlocked,userController.addToWishList)
+user_route.post('/removeWish',auth.isLogin,auth.isBlocked,userController.removeWish)
+
+
 
 
 

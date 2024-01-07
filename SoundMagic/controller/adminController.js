@@ -1,5 +1,9 @@
 const User =require('../model/userModel');
 const bcrypt = require('bcrypt');
+const Order = require('../model/orderModel')
+const PDFDocument = require('pdfkit');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const fs = require('fs');
 
 
 const loadLogin = async(req,res)=>{
@@ -65,6 +69,92 @@ const loadUsers = async(req,res)=>{
     }
 }
 
+const salesReport = async (req, res) => {
+    try {
+        const fromDate = new Date(req.body.startDate);
+        const toDate = new Date(req.body.endDate);
+        toDate.setHours(23, 59, 59, 999);
+
+        const orders = await Order.find({
+            OrderDate: { $gte: fromDate, $lte: toDate },
+        }).populate({ path: 'products.productId' });
+
+        // Generate PDF
+        const pdfDoc = new PDFDocument();
+        pdfDoc.pipe(fs.createWriteStream('sales_report.pdf'));
+
+        pdfDoc.text('Sales Report\n\n');
+
+        orders.forEach((order, index) => {
+            pdfDoc.text(`Order ${index + 1}`);
+            pdfDoc.text(`Order ID: ${order._id}`);
+            pdfDoc.text(`Name: ${order.shippingAddress.fullname}`);
+            pdfDoc.text(`Order Date: ${new Date(order.OrderDate).toLocaleDateString()}`);
+            pdfDoc.text(`Product Name: ${order.products.map(product => product.productId.productName).join(', ')}`);
+            pdfDoc.text(`Quantity: ${order.products.map(product => product.quantity).join(', ')}`);
+            pdfDoc.text(`Total: ${order.totalAmount}`);
+            pdfDoc.text(`Payment Method: ${order.paymentMethod}`);
+
+            pdfDoc.text('\n'); // Add a newline between orders
+        });
+
+        pdfDoc.end();
+
+        // Generate CSV
+        const csvWriter = createCsvWriter({
+            path: 'sales_report.csv',
+            header: [
+                { id: 'order_id', title: 'Order ID' },
+                { id: 'name', title: 'Name' },
+                { id: 'order_date', title: 'Order Date' },
+                { id: 'product_name', title: 'Product Name' },
+                { id: 'quantity', title: 'Quantity' },
+                { id: 'total', title: 'Total' },
+                { id: 'payment_method', title: 'Payment Method' },
+            ],
+        });
+
+        const csvData = orders.map(order => ({
+            order_id: order._id,
+            name: order.shippingAddress.fullname,
+            order_date: new Date(order.OrderDate).toLocaleDateString(),
+            product_name: order.products.map(product => product.productId.productName).join(', '),
+            quantity: order.products.map(product => product.quantity).join(', '),
+            total: order.totalAmount,
+            payment_method: order.paymentMethod,
+        }));
+
+        csvWriter.writeRecords(csvData);
+        res.json({orders})
+    } catch (error) {
+        console.error('Sales report generation error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+const downloadPdf = async(req,res)=>{
+    try {
+
+        res.download('sales_report.pdf');
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const downloadCsv = async(req,res)=>{
+    try {
+
+        res.download('sales_report.csv');
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
 // blocking 
 const userBlock = async (req, res) => {
     try {
@@ -127,5 +217,8 @@ module.exports = {
     loadDashboard,
     userBlock,
     userUnblock,
-    adminLogout
+    adminLogout,
+    salesReport,
+    downloadCsv,
+    downloadPdf
 }

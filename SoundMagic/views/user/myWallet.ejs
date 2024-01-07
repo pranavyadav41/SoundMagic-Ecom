@@ -196,21 +196,28 @@
         <div class="wallet-header">
             My Wallet
         </div>
+      
         <div class="wallet-balance">
-            Balance: &#8377;100.00
+            Balance: &#8377;<%= wallet[0].balance %>
         </div>
         <div class="wallet-history">
+            <% wallet[0].history.forEach((data)=>{ %>
+           
             <div class="transaction-item">
-                <span class="transaction-type">Credit</span>
-                <span class="amount">+ &#8377;50.00</span>
-                <span class="date">2023-01-15</span>
+                <% if(data.type=="Credit"){ %>
+                <span class="transaction-type" style="color: green;"><%= data.type %></span>
+                <span class="amount" style="color: green;">+ &#8377;<%= data.amount %></span>
+                <span class="date" style="color: green;"><%= data.date.toLocaleDateString() %></span>
+                <% }else if(data.type=="Debit"){ %>
+
+                    <span class="transaction-type" style="color:red;"><%= data.type %></span>
+                    <span class="amount" style="color: red;">-  &#8377;<%= data.amount %></span>
+                    <span class="date" style="color:red;"><%= data.date.toLocaleDateString() %></span>
+
+                    <% } %>
             </div>
-            <div class="transaction-item">
-                <span class="transaction-type">Debit</span>
-                <span class="amount">- &#8377;20.00</span>
-                <span class="date">2023-01-14</span>
-            </div>
-            <!-- Add more transaction items as needed -->
+            <% }); %>
+           
         </div>
     </div>
    

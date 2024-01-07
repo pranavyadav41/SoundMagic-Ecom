@@ -154,7 +154,7 @@
     <div class="container">
       <div class="search-container">
         <form>
-        <input type="text" class="search-input" placeholder="Search Product">
+        <input type="text" class="search-input" name="search" placeholder="Search Product">
         <button class="search-button" type="submit">Search</button>
       </form>
         <form action="/admin/products/add-product">
@@ -166,7 +166,6 @@
         <table>
           <thead>
             <tr>
-              <th>No</th>
               <th>Image</th>
               <th>Product Name</th>
               <th>Actual Price</th>
@@ -180,7 +179,6 @@
           <tbody>
             <% products.forEach((product, index) => { %>
               <tr>
-                <td><%= index + 1 %></td>
                 <td>
                   <% product.image.forEach((imagePath, index) => { %>
                     <img src="/productImages/<%= imagePath %>" alt="Product Image" width="50">
@@ -197,14 +195,27 @@
                     <form action="products/edit/<%= product._id %>" method="GET">
                     <button class="action-button">Edit</button>
                     </form>
-                    <button class="unlist-button" data-product-id ="<%= product._id %>" data-state="<%= product.isListed ? 'Unlisted' : 'Listed' %>" ><%= product.isListed ? 'Unlist' : 'List' %></button>
+                    <button class="unlist-button" data-product-id ="<%= product._id %>" data-state="<%= product.isListed ? 'true' : 'false' %>" ><%= product.isListed ? 'Unlist' : 'List' %></button>
                   </div>
                 </td>
               </tr>
             <% }); %>
           </tbody>
         </table>
-      </div>
+      </div><br>
+      <nav aria-label="Page navigation example">
+        <ul class="pagination">
+          <% previous = (currentPage > 1) ? currentPage - 1 : 1;
+             next = (currentPage < totalPages) ? currentPage + 1 : totalPages; %>
+
+          <li class="page-item"><a class="page-link" href="?page=<%= previous %>">previous</a></li>
+          <% for(let j=1;j<=totalPages;j++){ %>
+          <li class="page-item"><a class="page-link" href="?page=<%= j %>"><%= j %></a></li>
+          <% } %>
+          <li class="page-item"><a class="page-link" href="?page=<%= next %>">next</a></li>
+        </ul>
+
+      </nav>
     </div>
   
     

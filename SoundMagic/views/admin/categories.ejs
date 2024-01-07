@@ -171,7 +171,7 @@
                   <form action="categories/edit/<%= category._id %>" method="GET">
                   <button class="edit-button"  type="submit">Edit</button>
                   </form>
-                  <button class="unlist-button" data-category-id ="<%= category._id %>" data-state="<%= category.isListed ? 'Unlisted' : 'Listed' %>" ><%= category.isListed ? 'UnList' : 'List' %></button>
+                  <button class="unlist-button" data-category-id ="<%= category._id %>" data-state="<%= category.isListed ? 'true' : 'false' %>" ><%= category.isListed ? 'UnList' : 'List' %></button>
                   <!-- onclick="handleUnlist('<%= category.name %>')" -->
                 </div>
               </div>
