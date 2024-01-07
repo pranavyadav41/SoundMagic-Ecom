@@ -195,7 +195,7 @@
                     <form action="products/edit/<%= product._id %>" method="GET">
                     <button class="action-button">Edit</button>
                     </form>
-                    <button class="unlist-button" data-product-id ="<%= product._id %>" data-state="<%= product.isListed ? 'true' : 'false' %>" ><%= product.isListed ? 'Unlist' : 'List' %></button>
+                    <button class="unlist-button" data-product-id ="<%= product._id %>" data-state="<%= product.is_listed ? 'true' : 'false' %>" ><%= product.is_listed ? 'Unlist' : 'List' %></button>
                   </div>
                 </td>
               </tr>
@@ -206,7 +206,7 @@
       <nav aria-label="Page navigation example">
         <ul class="pagination">
           <% previous = (currentPage > 1) ? currentPage - 1 : 1;
-             next = (currentPage < totalPages) ? currentPage + 1 : totalPages; %>
+          next = (currentPage < totalPages) ? currentPage + 1 : totalPages; %>
 
           <li class="page-item"><a class="page-link" href="?page=<%= previous %>">previous</a></li>
           <% for(let j=1;j<=totalPages;j++){ %>
@@ -215,8 +215,8 @@
           <li class="page-item"><a class="page-link" href="?page=<%= next %>">next</a></li>
         </ul>
 
-      </nav>
-    </div>
+      </nav> 
+    </div> 
   
     
   <script src="/adminScript/products.js"></script>

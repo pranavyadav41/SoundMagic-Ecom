@@ -48,20 +48,41 @@ const loadDashboard = async(req,res)=>{
         console.log(error.message);
     }
 }
-
+ 
 const loadUsers = async(req,res)=>{
     try {
         var search = '';
         if(req.query.search){
             search = req.query.search;
         }
+
+        
+        var page = 1;
+        if(req.query.page){
+            page =Number(req.query.page);
+        }
+        const limit = 6;
+
+
         const user = await User.find({
             $or:[{firstname:{$regex:'.*'+search+'.*',$options:'i'}},
                  {lastname:{$regex:'.*'+search+'.*',$options:'i'}},
                  {email:{$regex:'.*'+search+'.*',$options:'i'}},
                  {mobile:{$regex:'.*'+search+'.*',$options:'i'}}]
-        });
-        res.render('userList',{user})
+        })
+        .limit(limit*1)
+        .skip((page-1)*limit)
+        .exec() 
+
+        const count = await User.find({
+            $or:[{firstname:{$regex:'.*'+search+'.*',$options:'i'}},
+                 {lastname:{$regex:'.*'+search+'.*',$options:'i'}},
+                 {email:{$regex:'.*'+search+'.*',$options:'i'}},
+                 {mobile:{$regex:'.*'+search+'.*',$options:'i'}}]
+        }).countDocuments()
+
+
+        res.render('userList',{user,totalPages:Math.ceil(count/limit),currentPage:page,previous:page-1,next:page+1})
       
         
     } catch (error) {

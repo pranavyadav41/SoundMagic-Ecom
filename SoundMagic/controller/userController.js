@@ -200,7 +200,7 @@ const loadHome = async (req, res) => {
     res.render("index",{products,banners});
 
   } catch (error) {
-    console.log(error.message);
+    console.log(error.message); 
   }
 };
 
@@ -211,22 +211,38 @@ const loadShop = async (req, res) => {
         search = req.query.search;
     }
 
-    let sortOption = {};
+    var page = 1;
+    if(req.query.page){
+        page =Number(req.query.page);
+    }
+
+
+    const limit = 6;
+
 
     if (req.query.id) {
+      
       const id = req.query.id;
       const category = await Category.find({ isListed: true });
-      const products = await Product.find({ is_listed: true,category:id,productName: { $regex: '.*'+search+'.*',$options:'i'} }).sort(sortOption);
-      res.render("shop", { category, products });
+      const products = await Product.find({ is_listed: true,category:id,productName: { $regex: '.*'+search+'.*',$options:'i'} }).limit(limit*1).skip((page-1)*limit).exec() 
+      const count = await Product.find({ is_listed: true,category:id,productName: { $regex: '.*'+search+'.*',$options:'i'} }).countDocuments();
+      let totalPages=Math.ceil(count/limit)
+      let previous = (page > 1) ? page - 1 : 1;
+      let next = (page < totalPages) ? page + 1 : totalPages; 
+      res.render("shop", { category, products,totalPages,currentPage:page,previous,next});
     } else {
-      const products = await Product.find({ is_listed: true,productName: { $regex: '.*'+search+'.*',$options:'i'} }).sort(sortOption);
+      const products = await Product.find({ is_listed: true,productName: { $regex: '.*'+search+'.*',$options:'i'} }).limit(limit*1).skip((page-1)*limit).exec()
+      const count = await Product.find({ is_listed: true,productName: { $regex: '.*'+search+'.*',$options:'i'} }).countDocuments();
+      let totalPages=Math.ceil(count/limit)
+      let previous = (page > 1) ? page - 1 : 1;
+      let next = (page < totalPages) ? page + 1 : totalPages;
      
       const category = await Category.find({ isListed: true });
      
-      res.render("shop", { products, category });
+      res.render("shop", { products, category,totalPages,currentPage:page,previous,next});
     }
   } catch (error) {
-    console.log("error.message");
+    console.log(error.message);
   }
 };
 

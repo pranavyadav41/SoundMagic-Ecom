@@ -13,10 +13,10 @@ const loadProduct = async(req,res)=>{
         if(req.query.search){
             search = req.query.search;
         }
-
+ 
         var page = 1;
         if(req.query.page){
-            page = req.query.page;
+            page =Number(req.query.page);
         }
 
         const limit = 4;
@@ -29,7 +29,7 @@ const loadProduct = async(req,res)=>{
         }).populate('category')
         .limit(limit*1)
         .skip((page-1)*limit)
-        .exec()
+        .exec() 
 
         const count = await Product.find({
             productName: { $regex: '.*'+search+'.*',$options:'i'}
@@ -269,6 +269,17 @@ const addCoupons = async(req,res)=>{
 
 const couponAdd = async(req,res)=>{
     try {
+        const copy = await Coupon.find({code:req.body.couponCode});
+        if(copy){
+            console.log("copy");
+            return false;
+        }
+
+        const dupli = await Coupon.find({couponName:req.body.couponName})
+        if(dupli){
+            console.log("duplicate");
+            return false;
+        }
         const newCoupon = new Coupon({
             code:req.body.couponCode,
             couponName:req.body.couponName,
