@@ -56,7 +56,7 @@ const loadUsers = async(req,res)=>{
             search = req.query.search;
         }
 
-        
+         
         var page = 1;
         if(req.query.page){
             page =Number(req.query.page);

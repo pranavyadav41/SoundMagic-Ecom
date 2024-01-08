@@ -169,7 +169,7 @@
             <% user.forEach((user, index) => { %>
                 <tr class="<%= index % 2 === 0 ? 'even-row' : 'odd-row' %>">
                     <td><%= user.firstname %></td>
-                    <td><%= user.lastname %></td>
+                    <td><%= user.lastname %></td> 
                     <td><%= user.email %></td>
                     <td><%= user.mobile %></td>
                     <td><%= user.isVerified ? 'Yes' : 'No' %></td>
@@ -184,10 +184,10 @@
          
             
           
-        </tbody>
+        </tbody> 
        
     </table><br>
-    <nav aria-label="Page navigation example">
+    <nav aria-label="Page navigation example"> 
       <ul class="pagination">
         <% previous = (currentPage > 1) ? currentPage - 1 : 1;
         next = (currentPage < totalPages) ? currentPage + 1 : totalPages; %>

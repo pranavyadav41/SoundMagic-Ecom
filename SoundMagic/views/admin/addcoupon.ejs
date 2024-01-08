@@ -298,7 +298,17 @@
                     showConfirmButton: false, 
                     timer: 1500
 });
-                   }
+                   }else {
+            // Handle error case
+            console.error('Error:', data.error);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: data.error,
+                showConfirmButton: false,
+                timer:1500
+            });
+        }
                     })
     }
   </script>

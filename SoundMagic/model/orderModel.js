@@ -6,6 +6,11 @@ const orderSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  orderId:{
+    type:String,
+    required:true,
+
+  },
   shippingAddress: {
     fullname: {
       type: String,

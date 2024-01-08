@@ -13,7 +13,7 @@ document.querySelectorAll('.action-button').forEach((button) => {
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, proceed!'
         }).then((result) => {
-            if (result.isConfirmed) {
+            if (result.isConfirmed) { 
                 // Proceed with the action
                 let url = currentState == 'false' ? `/admin/block-user/${userID}` : `/admin/unblock-user/${userID}`;
 

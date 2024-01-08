@@ -366,19 +366,30 @@
 }
 
 
-async function remove(productId){
-    fetch('/removeWish',{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({productId})
+async function remove(productId) {
+    const result = await Swal.fire({
+        title: `Are you sure you want to Remove?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Remove'
+    });
 
-    }).then(response=>response.json())
-    .then(data=>{
-        if(data.success){
-            location.reload();
-        }
-    })
+    if (result.isConfirmed) {
+        fetch('/removeWish', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId })
+        }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+    }
 }
+
            </script>
        </body>
        

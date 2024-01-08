@@ -207,12 +207,23 @@ const editProduct = async(req,res)=>{
 const orders = async(req,res)=>{
     try {
 
-        const orders = await Order.find().populate({path:'userId'});
+        var page = 1;
+        if(req.query.page){
+            page =Number(req.query.page);
+        }
+        const limit = 6;
+
+        const orders = await Order.find().populate({path:'userId'}).limit(limit*1)
+        .skip((page-1)*limit)
+        .exec() ;
+
         
-        res.render('orders',{orders})
+        const count = await Order.find().populate({path:'userId'}).countDocuments();
+        
+        res.render('orders',{orders,totalPages:Math.ceil(count/limit),currentPage:page,previous:page-1,next:page+1})
 
     } catch (error) {
-        
+         
     }
 }
 const orderDetail = async(req,res)=>{
@@ -269,16 +280,18 @@ const addCoupons = async(req,res)=>{
 
 const couponAdd = async(req,res)=>{
     try {
-        const copy = await Coupon.find({code:req.body.couponCode});
+        const copy = await Coupon.findOne({code:req.body.couponCode});
         if(copy){
             console.log("copy");
-            return false;
+            return res.status(400).json({ error: "Coupon code already exists." });
+           
         }
 
-        const dupli = await Coupon.find({couponName:req.body.couponName})
+        const dupli = await Coupon.findOne({couponName:req.body.couponName})
         if(dupli){
             console.log("duplicate");
-            return false;
+            return res.status(400).json({ error: "Coupon name already exists." });
+           
         }
         const newCoupon = new Coupon({
             code:req.body.couponCode,
@@ -317,6 +330,19 @@ const editCoupon = async(req,res)=>{
 
 const couponEdit = async(req,res)=>{
     try {
+        const copy = await Coupon.findOne({code:req.body.coupon.couponCode});
+        if(copy){
+            console.log("copy");
+            return res.status(400).json({ error: "Coupon code already exists." });
+           
+        }
+
+        const dupli = await Coupon.findOne({couponName:req.body.coupon.couponName})
+        if(dupli){
+            console.log("duplicate");
+            return res.status(400).json({ error: "Coupon name already exists." });
+           
+        }
 
         const coupon = await Coupon.findByIdAndUpdate({_id:req.body.couponId},{
             $set:{

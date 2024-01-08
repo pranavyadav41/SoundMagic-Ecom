@@ -559,14 +559,7 @@ function placeOrder(subtotal){
         }
 
           // Check if more than one payment method is selected
-    if (
-        (codCheckBox.checked && onlineCheckbox.checked) ||
-        (codCheckBox.checked && walletCheckbox.checked) ||
-        (onlineCheckbox.checked && walletCheckbox.checked)
-    ) {
-        alert("Please select only one payment method");
-        return false;
-    }
+   
 
 
     
@@ -589,14 +582,7 @@ function placeOrder(subtotal){
         }
 
 
-        if (couponCheckbox.checked) {
-        // Check if coupon is used with incompatible payment methods
-        if ((codCheckBox.checked || walletCheckbox.checked) && onlineCheckbox.checked) {
-            alert("Coupon cannot be used with Cash on Delivery or Wallet when paying online");
-            return false;
-        }
-    }
-
+        
 
         
 
@@ -679,7 +665,8 @@ function placeOrder(subtotal){
         const discount = data.discountPrice;
         const user = data.user;
         const address=data.addressId
-        const amount = order.amount;
+        const amount = order.amount*100;
+        console.log(amount);
         var options = {
     "key": "rzp_test_bvgGGt1MaFReGt", // Enter the Key ID generated from the Dashboard
     "amount": amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
@@ -705,7 +692,7 @@ function placeOrder(subtotal){
     }
 };
 var rzp1 = new Razorpay(options);
-rzp1.open();
+
 rzp1.on('payment.failed', function (response){
         alert(response.error.code);
         alert(response.error.description);
@@ -715,6 +702,7 @@ rzp1.on('payment.failed', function (response){
         alert(response.error.metadata.order_id);
         alert(response.error.metadata.payment_id);
 });
+rzp1.open();
 async function verifyPayment(payment,order){
    fetch('/paymentVerify',{
     method:'POST',
@@ -779,7 +767,7 @@ async function verifyPayment(payment,order){
     }
 };
 var rzp1 = new Razorpay(options);
-rzp1.open();
+
 rzp1.on('payment.failed', function (response){
         alert(response.error.code);
         alert(response.error.description);
@@ -789,6 +777,7 @@ rzp1.on('payment.failed', function (response){
         alert(response.error.metadata.order_id);
         alert(response.error.metadata.payment_id);
 });
+rzp1.open();
 async function verifyPayment(payment,order){
    fetch('/paymentVerify',{
     method:'POST',

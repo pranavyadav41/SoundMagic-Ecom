@@ -296,7 +296,17 @@ if (!isValidCouponCode(coupon.couponCode)) {
                    .then(data=>{
                    if(data.success){
                     window.location.href ="/admin/coupons"
-                   }
+                   }else{
+            // Handle error case
+            console.error('Error:', data.error);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: data.error,
+                showConfirmButton: false,
+                timer:1500
+            });
+        }
                     })
 }
   </script>

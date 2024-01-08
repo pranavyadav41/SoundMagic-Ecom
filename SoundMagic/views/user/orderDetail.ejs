@@ -160,6 +160,7 @@
               <div class="product d-flex">
                 <div class="mt-3 ml-3">
                   <img src="/productImages/<%= product.image[0] %>" alt="Product Image" style="width:150px;height:150px;">
+                 
                 </div>
                 <div class="ml-4 mt-2">
                   <p><strong>Product Name:</strong><%= product.productName %></p>
@@ -172,6 +173,9 @@
                     <p style="color: red;"><strong>Order Cancelled</strong></p>
 
                     <% }else if(targetProduct.productOrderStatus=='delivered'){ %>
+
+                        
+                        
                     <button class="btn btn-dark btn-sm" onclick="returnOrder('<%= product._id %>','<%= order._id %>')">Return Order</button>
                     <% }else if(targetProduct.productOrderStatus=='Returned'){ %>
 
@@ -201,10 +205,21 @@
             <div class="section-header1">Order Details</div>
             <div class="section1">
               <p class="he"><strong>Date:</strong><%= order.OrderDate %></p>
-              <p class="he"><strong>Order ID:</strong><%= order._id %></p>
+              <p class="he"><strong>Order ID:</strong><%= order.orderId %></p>
               <p class="he"><strong>Order Status:</strong><%= targetProduct.productOrderStatus %></p>
               <p class="he"><strong>Payment Method:</strong><%= order.paymentMethod %></p>
             </div>
+            <div class="section-header1">More action</div>
+            <div class="section1" style="height:60px;">
+
+                <div class="d-flex">
+
+                <p class="ml-5 mt-3"><strong>Download Invoice</strong></p>
+                <button class="ml-4 mt-2 btn btn-outline-dark" style="height:35px;">Download</button>
+            </div>
+
+            </div>
+
         </div>
           </div>
     

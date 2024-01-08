@@ -53,6 +53,14 @@ function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000);
 }
 
+//Generate a random order id
+function generateRandomOrderId() {
+  const timestamp = new Date().getTime().toString();
+  const randomString = Math.random().toString(36).substring(2, 8); // Use a random string of length 6
+
+  return `${timestamp}-${randomString}`;
+}
+
 //For storing user details
 
 const insertUser = async (req, res) => {
@@ -195,7 +203,7 @@ const userLogin = async (req, res) => {
 const loadHome = async (req, res) => {
   try {
     const products = await Product.find({ is_listed: true });
-    const banners = await Banner.find({isListed:true});
+    const banners = await Banner.find({isListed:true})
 
     res.render("index",{products,banners});
 
@@ -233,13 +241,14 @@ const loadShop = async (req, res) => {
     } else {
       const products = await Product.find({ is_listed: true,productName: { $regex: '.*'+search+'.*',$options:'i'} }).limit(limit*1).skip((page-1)*limit).exec()
       const count = await Product.find({ is_listed: true,productName: { $regex: '.*'+search+'.*',$options:'i'} }).countDocuments();
+      const cart = await Cart.find();
       let totalPages=Math.ceil(count/limit)
       let previous = (page > 1) ? page - 1 : 1;
       let next = (page < totalPages) ? page + 1 : totalPages;
      
       const category = await Category.find({ isListed: true });
      
-      res.render("shop", { products, category,totalPages,currentPage:page,previous,next});
+      res.render("shop", { products, category,totalPages,currentPage:page,previous,next,cart});
     }
   } catch (error) {
     console.log(error.message);
@@ -580,6 +589,7 @@ const placeOrder = async(req,res)=>{
     const userId =req.session.userid;
     const addressId =req.body.addressId;
     const subtotal = req.body.subtotal;
+    const orderId = generateRandomOrderId();
     let discountPrice = 0;
     if(req.body.newSubtotalValue){
       discountPrice = req.body.newSubtotalValue;
@@ -600,6 +610,7 @@ const placeOrder = async(req,res)=>{
 
     const userOrder = new Order({
       userId:userId,
+      orderId:orderId,
       shippingAddress:{
         fullname:address[0].fullname,
         mobile:address[0].mobile,
@@ -653,6 +664,7 @@ const placeOrder = async(req,res)=>{
 
     const userOrder = new Order({
       userId:userId,
+      orderId:orderId,
       shippingAddress:{
         fullname:address[0].fullname,
         mobile:address[0].mobile,
@@ -762,9 +774,11 @@ const paymentVerify = async(req,res)=>{
      const address = await Address.find({_id:addressId}).populate('address')
      const cart = await Cart.find({userId:userid})
      const products = cart[0].items;
+     const orderId = generateRandomOrderId();
      
     const userOrder = new Order({
       userId:userid,
+      orderId:orderId,
       shippingAddress:{
         fullname:address[0].fullname,
         mobile:address[0].mobile,
