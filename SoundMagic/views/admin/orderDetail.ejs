@@ -208,8 +208,8 @@
         <!-- Order Details Section -->
         <div class="section">
             <h2>Order Details</h2>
-            <p><strong>Date:</strong><%= orders.OrderDate %></p>
-            <p><strong>Order ID:</strong><%= orders._id %></p>
+            <p><strong>Date:</strong><%= orders.OrderDate.toLocaleDateString() %></p>
+            <p><strong>Order ID:</strong><%= orders.orderId %></p>
             <p><strong>Payment Method:</strong><%= orders.paymentMethod %></p>
         </div>
     
@@ -280,9 +280,6 @@
           var newValue = this.value;
           var productId = this.getAttribute('data-product-id')
           var orderId = this.getAttribute('data-order-id')
-          console.log(newValue);
-          console.log(productId);
-          console.log(orderId);
           
         fetch('/admin/orderStatus',{
           method:'POST',

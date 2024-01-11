@@ -53,6 +53,11 @@ admin_route.post('/categories/edit/:id',auth.isLogin,categoryController.editCate
 admin_route.patch('/list-category/:id',auth.isLogin,categoryController.listCategory)
 admin_route.patch('/unlist-category/:id',auth.isLogin,categoryController.unlistCategory)
 
+//CategoryOffer
+admin_route.post('/addCategoryOffer',auth.isLogin,categoryController.addCategoryOffer)
+admin_route.post('/removeCategoryOffer',auth.isLogin,categoryController.removeCategoryOffer)
+
+
 
 //Products
 
@@ -84,6 +89,24 @@ admin_route.get('/orderDetail/:orderID',auth.isLogin,productController.orderDeta
 
 admin_route.post('/orderStatus',auth.isLogin,productController.orderStatus)
 
+admin_route.get('/returnOrders',auth.isLogin,productController.returnOrders)
+
+//OFFERS
+
+admin_route.get('/offers',auth.isLogin,productController.loadOffers)
+admin_route.get('/addOffer',auth.isLogin,productController.addOffer)
+admin_route.post('/addOffer',auth.isLogin,productController.offerAdd)
+admin_route.get('/editOffer/:id',auth.isLogin,productController.editOffer)
+admin_route.post('/offerEdit',auth.isLogin,productController.offerEdit)
+
+admin_route.patch('/list-offer/:id',auth.isLogin,productController.listOffer);
+admin_route.patch('/unlist-offer/:id',auth.isLogin,productController.unlistOffer);
+
+
+admin_route.post('/addProductOffer',auth.isLogin,productController.addProductOffer)
+admin_route.post('/removeProductOffer',auth.isLogin,productController.removeProductOffer)
+
+
 //COUPON
 
 admin_route.get('/coupons',auth.isLogin,productController.coupons)
@@ -94,6 +117,7 @@ admin_route.post('/editCoupon',auth.isLogin,productController.couponEdit)
 
 admin_route.patch('/list-coupon/:id',auth.isLogin,productController.listCoupon);
 admin_route.patch('/unlist-coupon/:id',auth.isLogin,productController.unlistCoupon);
+
 
 //BANNER
 

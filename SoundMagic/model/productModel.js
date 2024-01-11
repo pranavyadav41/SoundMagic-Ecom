@@ -6,14 +6,29 @@
        type:String,
        required:true
     },
-     actualPrice:{
-       type:Number,
-       required:true
-     },
    
      offerPrice:{
        type:Number,
        required:true
+     },
+
+     productOffer:{
+
+      type:Number,
+      default:0
+
+
+     },
+     categoryOffer:{
+
+      type:Number,
+      default:0
+
+     },
+
+     totalOfferPrice:{
+      type:Number,
+      default:0
      },
    
      image:{

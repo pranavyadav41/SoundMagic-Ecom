@@ -8,6 +8,7 @@ const crypto = require('crypto')
 const Category = require("../model/categoryModel");
 const Product = require("../model/productModel");
 const Cart = require("../model/cartModel");
+const Return = require("../model/returnModel")
 const Address = require("../model/addressModel")
 const Order = require("../model/orderModel")
 const Razorpay = require("razorpay")
@@ -15,6 +16,9 @@ const Coupon = require("../model/couponModel")
 const Wallet = require("../model/walletModel")
 const Wishlist = require("../model/wishlistModel")
 const Banner = require("../model/bannerModel")
+const moment = require('moment');
+const now = moment(Date.now());
+
 var instance = new Razorpay({ key_id:process.env.KEY_ID, key_secret:process.env.KEY_SECRET })
 
 
@@ -882,12 +886,14 @@ const cancelOrder = async(req,res)=>{
     const product = await Product.find({_id:productId})
     
     const orderId = req.body.orderId;
-
+ 
     const order = await Order.findOne({_id:orderId})
 
     const targetProduct = order.products.find(product=>product.productId.toString()===productId)
 
     targetProduct.productOrderStatus = 'Cancelled';
+
+    targetProduct. returnOrderStatus ={status:"Cancelled",reason:req.body.selectedReason,date:Date.now()};
 
      const cancel = await order.save();
 
@@ -1065,7 +1071,7 @@ const cancelOrder = async(req,res)=>{
   } catch (error) {
 
     console.log(error.message);
-  }
+  } 
 }
 
 const returnOrder = async(req,res)=>{
@@ -1074,15 +1080,24 @@ const returnOrder = async(req,res)=>{
     const orderId = req.body.orderId;
 
     const product = await Product.find({_id:productId})
-    console.log(product);
 
     const order = await Order.findOne({_id:orderId})
 
     const targetProduct = order.products.find(product=>product.productId.toString()===productId)
-    console.log(targetProduct);
     targetProduct.productOrderStatus = 'Returned';
 
     const returned = await order.save();
+
+    const newReturn = new Return({
+
+      userId:req.session.userid,
+      productId:productId,
+      reason:req.body.selectedReason,
+      summary:req.body.summary,
+      orderId:orderId 
+    }) 
+
+    await newReturn.save();
 
     
 
@@ -1093,8 +1108,9 @@ const returnOrder = async(req,res)=>{
       
       res.json({success:true})
       ///////////Update Stock//////////
-        const quantity = targetProduct.quantity;
-        await Product.findOneAndUpdate({_id:productId},{$inc:{stock:quantity}})
+      const quantity = targetProduct.quantity;
+      await Product.findOneAndUpdate({_id:productId},{$inc:{stock:quantity}})
+  
       /////////////////////////////////
 
       const totalAmount = order.totalAmount;

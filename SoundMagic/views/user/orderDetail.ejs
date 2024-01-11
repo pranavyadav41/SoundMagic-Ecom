@@ -167,7 +167,7 @@
                   <p><strong>Quantity:</strong><%= targetProduct.quantity %></p>
                   <p><strong>Price/unit: </strong> &#8377;<%= product.offerPrice %></p>
                   <% if(targetProduct.productOrderStatus=='Order placed'||targetProduct.productOrderStatus=='shipped'){ %>
-                  <button class="btn btn-danger btn-sm" onclick="cancelOrder('<%= product._id %>','<%= order._id %>')">Cancel Order</button>
+                  <button class="btn btn-danger btn-sm"data-toggle="modal" data-target="#cancelModalCenter" data-backdrop="static" data-keyboard="false">Cancel Order</button>
                   <% }else if(targetProduct.productOrderStatus=='Cancelled'){ %>
 
                     <p style="color: red;"><strong>Order Cancelled</strong></p>
@@ -176,12 +176,93 @@
 
                         
                         
-                    <button class="btn btn-dark btn-sm" onclick="returnOrder('<%= product._id %>','<%= order._id %>')">Return Order</button>
+                    <button class="btn btn-dark btn-sm" data-toggle="modal" data-target="#exampleModalCenter" data-backdrop="static" data-keyboard="false">Return Order</button>
                     <% }else if(targetProduct.productOrderStatus=='Returned'){ %>
 
                         <p style="color: red;"><strong>Order Returned</strong></p>
 
                     <% } %>
+  
+  <!--Return  Modal -->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle">Return Order</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+  
+          <!-- Reason Dropdown -->
+          <div class="form-group">
+            <label for="returnReason"><strong>Select Reason:</strong></label>
+            <select class="form-control" id="returnReason" name="returnReason">
+              <option value="defective">Defective Product</option>
+              <option value="wrongSize">Wrong Product</option>
+              <option value="wrongSize">Compatibility Issues</option>
+              <option value="notAsExpected">Not As Expected</option>
+              <!-- Add more options as needed -->
+            </select>
+          </div><br>
+  
+          <!-- Summary Textarea -->
+          <div class="form-group">
+            <label for="returnSummary"><strong>Summary</strong><span>(optional)</span></label>
+            <textarea class="form-control" id="returnSummary" name="returnSummary" rows="4" placeholder="Enter a brief summary of the issue"></textarea>
+          </div>
+  
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="returnOrder('<%= product._id %>','<%= order._id %>')">Submit Return</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+    
+  <!--Cancel  Modal -->
+<div class="modal fade" id="cancelModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Return Order</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Reason Dropdown -->
+        <div class="form-group">
+          <label for="returnReason"><strong>Select Reason:</strong></label>
+          <select class="form-control" id="cancelReason" name="returnReason">
+            <option value="defective">Defective Product</option>
+            <option value="wrongSize">Wrong Product</option>
+            <option value="wrongSize">Compatibility Issues</option>
+            <option value="notAsExpected">Not As Expected</option>
+            <!-- Add more options as needed -->
+          </select>
+        </div><br>
+
+        <!-- Summary Textarea -->
+        <div class="form-group">
+          <label for="cancelSummary"><strong>Summary</strong><span>(optional)</span></label>
+          <textarea class="form-control" id="cancelSummary" name="returnSummary" rows="4" placeholder="Enter a brief summary of the issue"></textarea>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="cancelOrder('<%= product._id %>','<%= order._id %>')">Submit Return</button>
+      </div>
+    </div>
+  </div>
+</div>
+  
 
 
 
@@ -204,7 +285,7 @@
             <!-- Order Info Section -->
             <div class="section-header1">Order Details</div>
             <div class="section1">
-              <p class="he"><strong>Date:</strong><%= order.OrderDate %></p>
+              <p class="he"><strong>Date:</strong><%= order.OrderDate.toLocaleDateString() %></p>
               <p class="he"><strong>Order ID:</strong><%= order.orderId %></p>
               <p class="he"><strong>Order Status:</strong><%= targetProduct.productOrderStatus %></p>
               <p class="he"><strong>Payment Method:</strong><%= order.paymentMethod %></p>
@@ -290,7 +371,7 @@
             </div>
         </footer>
         <!-- Footer Section End -->
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+    <script data-cfasync="false" src="cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript">
@@ -325,10 +406,18 @@
             <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
             <script>
                 async function cancelOrder(productId,orderId){
+                  var selectedReason = document.getElementById('cancelReason').value;
+                  var summary = document.getElementById('cancelSummary').value;
+                
+
+                  if(selectedReason==''){
+                    alert("select reason") 
+                    return false;
+                  }
                    fetch('/cancelOrder',{
                     method:'POST',
                     headers:{'Content-type':'application/json'},
-                    body:JSON.stringify({productId,orderId})
+                    body:JSON.stringify({productId,orderId,selectedReason,summary})
                    })
                    .then(response=>response.json())
                    .then(data=>{
@@ -340,10 +429,20 @@
 
 
                 async function returnOrder(productId,orderId){
-                    fetch('/returnOrder',{
+
+                  var selectedReason = document.getElementById('returnReason').value;
+                  var summary = document.getElementById('returnSummary').value;
+                  console.log(selectedReason);
+                  console.log(summary);
+
+                  if(selectedReason==''){
+                    alert("select reason") 
+                    return false;
+                  }
+                  fetch('/returnOrder',{
                     method:'POST',
                     headers:{'Content-type':'application/json'},
-                    body:JSON.stringify({productId,orderId})
+                    body:JSON.stringify({productId,orderId,selectedReason,summary})
                    })
                    .then(response=>response.json())
                    .then(data=>{

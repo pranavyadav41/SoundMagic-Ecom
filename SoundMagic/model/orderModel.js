@@ -51,7 +51,20 @@ const orderSchema = new mongoose.Schema({
       productOrderStatus:{
         type:String,
         default:"Order placed"
-      }
+      },
+      returnOrderStatus:{
+        status:{
+          type:String
+        },
+        reason:{ 
+          type:String
+        },
+        date:{
+          type:Date,
+        }
+        
+      },
+
     },
   ],
   OrderStatus: {

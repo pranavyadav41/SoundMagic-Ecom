@@ -3,12 +3,17 @@ const Category = require('../model/categoryModel')
 const Order = require('../model/orderModel')
 const Coupon = require('../model/couponModel')
 const Banner = require('../model/bannerModel')
+const Return = require('../model/returnModel')
 const moment = require('moment')
 const { findByIdAndUpdate } = require('../model/userModel')
 const now = moment();
+const Offer = require("../model/offerModel")
 
 const loadProduct = async(req,res)=>{
     try {
+
+        var offers = await Offer.find({listed:1})
+
         var search = '';
         if(req.query.search){
             search = req.query.search;
@@ -37,7 +42,7 @@ const loadProduct = async(req,res)=>{
 
 
 
-        res.render('products',{products,totalPages:Math.ceil(count/limit),currentPage:page,previous:page-1,next:page+1})
+        res.render('products',{products,offers,totalPages:Math.ceil(count/limit),currentPage:page,previous:page-1,next:page+1})
     } catch (error) {
         console.log(error.message);
     }
@@ -58,7 +63,6 @@ const  addProduct = async(req,res)=>{
         
         const {
             productName,
-            actualPrice,
             offerPrice,
             description,
             stock,
@@ -80,7 +84,6 @@ const  addProduct = async(req,res)=>{
 
         const newProduct = new Product({
             productName,
-            actualPrice,
             offerPrice,
             description,
             stock,
@@ -172,7 +175,6 @@ const editProduct = async(req,res)=>{
                     $set: {
                         image:image,
                         productName: req.body.productName,
-                        actualPrice:req.body.actualPrice,
                         offerPrice: req.body.offerPrice,
                         stock: req.body.stock,
                         category: categoryObject._id,
@@ -187,7 +189,6 @@ const editProduct = async(req,res)=>{
                 $set: {
                    
                     productName: req.body.productName,
-                    actualPrice:req.body.actualPrice,
                     offerPrice: req.body.offerPrice,
                     stock: req.body.stock,
                     category: categoryObject._id,
@@ -211,7 +212,7 @@ const orders = async(req,res)=>{
         if(req.query.page){
             page =Number(req.query.page);
         }
-        const limit = 6;
+        const limit = 6; 
 
         const orders = await Order.find().populate({path:'userId'}).limit(limit*1)
         .skip((page-1)*limit)
@@ -253,6 +254,191 @@ const orderStatus = async(req,res)=>{
     } catch (error) {
         
         console.log(error.message)
+    }
+}
+
+const returnOrders = async(req,res)=>{
+    try {
+
+        const returns = await Return.find({}).populate({path:'productId'});
+
+        res.render('returnOrders',{returns})
+        
+    } catch (error) { 
+
+        console.log(error.message);
+        
+    }
+}
+
+const loadOffers = async(req,res)=>{
+    try {
+
+        const offers = await Offer.find({})
+        res.render('offers',{offers})
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const addOffer = async(req,res)=>{
+    try {
+
+        res.render('addOffer')
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const offerAdd = async(req,res)=>{
+    try {
+
+        const newOffer = new Offer({
+            offerName:req.body.offerName,
+            validFrom:req.body.validFrom,
+            expiry:req.body.validTo,
+            discountPercentage:req.body.discountPercentage,
+
+        })
+
+        await newOffer.save();
+        res.json({success:true})
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const editOffer = async(req,res)=>{
+    try {
+
+
+        const offer =await Offer.find({_id:req.params.id})
+
+        res.render('editOffer',{offer})
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const offerEdit = async(req,res)=>{
+    try {
+
+        const offer = await Offer.findByIdAndUpdate({_id:req.body.offerId},{
+            $set:{
+                offerName:req.body.offer.offerName,
+                validFrom:req.body.offer.validFrom,
+                expiry:req.body.offer.validTo,
+                discountPercentage:req.body.offer.discountPercentage,
+            }
+        });
+
+        res.json({success:true})
+
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const listOffer = async(req,res)=>{
+    try {
+
+        const id = req.params.id
+        const offer = await Offer.findOne({ _id: id })
+        if (!offer) {
+            return res.status(404).json({ error: 'Offer not found' });
+        }
+        offer.listed = 1;
+        await offer.save()
+        res.json({ message: 'Offer listed successfully' })
+
+
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const unlistOffer = async(req,res)=>{
+    try {
+
+        const id = req.params.id
+
+        const offer = await Offer.findOne({ _id: id })
+        if (!offer) {
+            return res.status(404).json({ error: 'Offer not found' });
+        }
+        offer.listed = 0;
+        await offer.save()
+        res.json({ message: 'Offer Unlisted successfully' })
+
+
+
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const addProductOffer = async(req,res)=>{
+    try {
+        const offer = await Offer.find({_id:req.body.offerId})
+
+        const discount = offer[0].discountPercentage;
+
+        const product = await Product.find({_id:req.body.productId})
+
+        const actualPrice = product[0].offerPrice; 
+
+        const productOffer =Math.round(actualPrice*discount/100);
+
+       
+        const productSave = await Product.findOneAndUpdate({_id:req.body.productId},{$set:{productOffer:productOffer}});
+
+        const totalOffer = actualPrice-(productOffer+product[0].categoryOffer)
+
+        const totalSave = await Product.findOneAndUpdate({_id:req.body.productId},{$set:{totalOfferPrice:totalOffer}})
+
+
+        if(totalSave){
+            console.log("success");
+        }
+
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const removeProductOffer = async(req,res)=>{
+    try {
+
+        const product = await Product.findOneAndUpdate({_id:req.body.productId},{$set:{productOffer:0}})
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
     }
 }
 
@@ -593,5 +779,15 @@ module.exports = {
     editBanner,
     bannerEdit,
     listBanner,
-    unlistBanner
+    unlistBanner,
+    returnOrders,
+    loadOffers,
+    addOffer,
+    offerAdd,
+    editOffer,
+    offerEdit,
+    listOffer,
+    unlistOffer,
+    addProductOffer,
+    removeProductOffer
 }

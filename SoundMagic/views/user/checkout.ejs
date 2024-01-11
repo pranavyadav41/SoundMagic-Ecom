@@ -460,8 +460,7 @@ function applyCoupon(code, discountAmount) {
         // Subtract the discount from the subtotal
         const newSubtotal = parseFloat(subtotalElement.textContent.replace(/[^0-9.-]+/g,"")) - discount;
 
-        // Update the subtotal element with the new value
-        // subtotalElement.textContent = '&#8377;' + newSubtotal.toFixed(2);
+      
 
         // Update the amount decreased element with the discount amount
         amountDecreasedElement.textContent ="₹"+ discount;

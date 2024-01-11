@@ -180,7 +180,7 @@ const downloadCsv = async(req,res)=>{
 const userBlock = async (req, res) => {
     try {
 
-        const userID = req.params.userID
+        const userID = req.params.userID 
         const user = await User.findOne({ _id: userID })
         if (!user) {
             return res.status(404).json({ error: 'User not found' });

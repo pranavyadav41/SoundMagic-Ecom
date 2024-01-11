@@ -1,10 +1,15 @@
 const Category = require('../model/categoryModel')
+const Offer = require('../model/offerModel')
+const Product = require('../model/productModel')
+const mongoose = require('mongoose')
 
 
 const loadCategories = async(req,res)=>{
     try {
+
+        const offers = await Offer.find({});
         const categories = await Category.find();
-        res.render('categories', { categories });
+        res.render('categories', { categories,offers});
     } catch (error) {
         console.log(error.message);
         res.status(500).send('Internal Server Error');
@@ -114,6 +119,61 @@ const unlistCategory = async(req,res)=>{
 
 }
 
+const addCategoryOffer = async(req,res)=>{
+    try {
+        console.log(req.body)
+
+        const products = await Product.find({category:req.body.categoryId})
+        
+        const offer = await Offer.find({_id:req.body.offerId});
+       
+        const discount = offer[0].discountPercentage
+
+        for (const product of products) {
+
+            let actualPrice = product.offerPrice;
+
+            let categoryOffer = Math.round(actualPrice*discount/100);
+
+             product.categoryOffer = categoryOffer;
+
+             await product.save();
+
+            const totalOffer = actualPrice-(categoryOffer+product.productOffer)
+    
+            product.totalOfferPrice = totalOffer;
+
+            await product.save();
+
+
+
+
+         }
+
+
+
+
+
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
+const removeCategoryOffer = async(req,res)=>{
+    try {
+
+        console.log(req.body);
+        
+    } catch (error) {
+
+        console.log(error.message);
+        
+    }
+}
+
 
 module.exports = {
     loadCategories,
@@ -121,5 +181,7 @@ module.exports = {
     loadEditCategories,
     editCategories,
     listCategory,
-    unlistCategory
+    unlistCategory,
+    addCategoryOffer,
+    removeCategoryOffer
 }

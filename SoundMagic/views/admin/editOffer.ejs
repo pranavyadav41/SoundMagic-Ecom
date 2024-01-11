@@ -7,9 +7,60 @@
   <title>Modernize Free</title>
   <link rel="shortcut icon" type="image/png" href="/assets/images/logos/favicon.png" />
   <link rel="stylesheet" href="/assets/css/styles.min.css" />
-  <link rel="stylesheet" href="/adminCss/addProduct.css" />
- 
+  <link rel="stylesheet" href="/adminCss/categories.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2"></script>
 </head>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+    }
+
+    .add-coupon-container {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        max-width: 600px;
+        width: 100%;
+        padding: 20px;
+        margin-left: 300px;
+        margin-top: 80px;
+        box-sizing: border-box;
+    }
+
+    .form-group {
+        display: flex;
+        margin-bottom: 20px;
+        margin-top: 20px;
+    }
+
+    .form-group label {
+        width: 150px;
+        margin-right: 20px;
+        line-height: 32px;
+    }
+
+    .coupon-input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    .add-coupon-button {
+        background-color: #3498db;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+</style>
 
 <body>
   <!--  Body Wrapper -->
@@ -67,7 +118,7 @@
               </a>
             </li>
             <li class="sidebar-item">
-              <a class="sidebar-link" href="./ui-forms.html" aria-expanded="false">
+              <a class="sidebar-link" href="/admin/orders" aria-expanded="false">
                 <span>
                   <i class="ti ti-file-description"></i>
                 </span>
@@ -117,7 +168,7 @@
           </ul>
           <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
             <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
-              
+              <a href="https://adminmart.com/product/modernize-free-bootstrap-admin-dashboard/" target="_blank" class="btn btn-primary">Download Free</a>
               <li class="nav-item dropdown">
                 <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" data-bs-toggle="dropdown"
                   aria-expanded="false">
@@ -145,52 +196,71 @@
           </div>
         </nav>
       </header>
-      <!-- //User Details Page -->
-      <header>
-        <h1>Add Product</h1>
-    </header>
+      <header> </header>
 
-    <div class="container">
-        <form action="/admin/products/add-product"  method="POST" enctype="multipart/form-data">
-            <label for="productName">Product Name:</label>
-            <input type="text" id="productName" name="productName" required>
-
-            <label for="price">Offer Price:</label>
-            <input type="number" id="price" name="offerPrice" min="0" step="0.01" required>
-
-
-            <label  for="description">Description:</label>
-            <textarea style="border-radius: 5px; border: 1px solid #ced4da;" id="description" name="description" rows="4" required></textarea>
-
-            <label for="stock">Stock:</label>
-            <input type="number" id="stock" name="stock" min="0" required>
-
-            <label for="category">Category:</label>
-            <select id="category" name="category" required> 
-                <% categories.forEach(category => { %>
-                    <option value="<%= category.name %>"><%= category.name %></option>
-                <% }); %>
-            </select>
-
-
-            <!-- Add multiple image upload option -->
-            <label for="productImages">Product Images (up to 4):</label>
-            <div class="custom-file-upload" onclick="document.getElementById('imagesInput').click()">
-                Upload Images
-            </div>
-            <input type="file" id="imagesInput" name="image" accept="image/*" multiple style="display: none" multiple>
-
-            <button type="submit">Add Product</button>
-        </form>
+     
+      <div class="add-coupon-container">
+        <h4 style="color:#3498db"><strong>EDIT OFFER</strong></h4>
+       
+        <div class="form-group">
+            <label for="couponName"><strong>Offer Name:</strong></label>
+            <input type="text" id="couponName" class="coupon-input" value="<%= offer[0].offerName %>" >
+        </div>
+        <div class="form-group">
+            <label for="discountAmount"><strong>Discount Percentage:</strong></label>
+            <input type="number" id="discountAmount" class="coupon-input" value="<%= offer[0].discountPercentage %>" >
+        </div>
+        <div class="form-group">
+            <label for="validFrom"><strong>Valid From:</strong></label>
+            <input type="date" id="validFrom" class="coupon-input" value="<%= offer[0].validFrom %>">
+        </div>
+        <div class="form-group">
+            <label for="validTo"><strong>Valid To:</strong></label>
+            <input type="date" id="validTo" class="coupon-input" value="<%= offer[0].expiry %>">
+        </div>
+        <button class="add-coupon-button" onclick="editOffer('<%= offer[0]._id %>')">Save Changes</button>
     </div>
     
-    
-   
-  <script src="../assets/libs/jquery/dist/jquery.min.js"></script>
-  <script src="../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../assets/js/sidebarmenu.js"></script>
-  <script src="../assets/js/app.min.js"></script>
-  <script src="../assets/libs/simplebar/dist/simplebar.js"></script>
-</body>
+     
+ 
+  <script src="/assets/libs/jquery/dist/jquery.min.js"></script>
+  <script src="/adminScript/categories.js"></script>
+  <script src="/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/js/sidebarmenu.js"></script>
+  <script src="/assets/js/app.min.js"></script>
+  <script src="/assets/libs/simplebar/dist/simplebar.js"></script>
+  <script>
+     async function editOffer(offerId){
 
-</html>
+const offer = {
+offerName : document.getElementById('couponName').value.trim(),
+discountPercentage:document.getElementById('discountAmount').value.trim(),
+validFrom:document.getElementById('validFrom').value.trim(),
+validTo:document.getElementById('validTo').value.trim(),
+
+}
+    fetch('/admin/offerEdit',{
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({offer,offerId})
+    }).then(response=>response.json())
+                   .then(data=>{
+                   if(data.success){
+                    window.location.href ="/admin/offers"
+                   }else{
+            // Handle error case 
+            console.error('Error:', data.error);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: data.error,
+                showConfirmButton: false,
+                timer:1500
+            });
+        }
+                    })
+}
+  </script>
+  </body>
+  
+  </html>

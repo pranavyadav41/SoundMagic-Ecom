@@ -9,6 +9,31 @@
   <link rel="stylesheet" href="../assets/css/styles.min.css" />
   <link rel="stylesheet" href="/adminCss/categories.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2"></script>
+  <style>
+    .coupon-container {
+         text-align: center;
+         padding: 20px;
+     }
+
+     .coupon {
+         background-color: #f9f9f9;
+         border: 1px solid #ddd;
+         padding: 15px;
+         margin: 10px;
+         border-radius: 5px;
+         display: flex;
+         flex-direction: column;
+         max-width: 400px;
+         text-align: left;
+     }
+
+     .coupon strong {
+         color: #333;
+     }
+     .card {
+       margin: 20px;
+     }
+</style>
 </head>
 
 <body>
@@ -166,6 +191,7 @@
             <li>
               <div class="category-container">
                 <span class ="category-name" data-category-id="<%= category._id %>"><%= category.name %></span>
+                <button onclick="removeOffer('<%= category._id %>')">remove</button>
                 <div class="action-buttons">
                   <!-- <form action="admin/categories/edit/<%= category._id %>" method="GET"> -->
                   <form action="categories/edit/<%= category._id %>" method="GET">
@@ -173,6 +199,7 @@
                   </form>
                   <button class="unlist-button" data-category-id ="<%= category._id %>" data-state="<%= category.isListed ? 'true' : 'false' %>" ><%= category.isListed ? 'UnList' : 'List' %></button>
                   <!-- onclick="handleUnlist('<%= category.name %>')" -->
+                  <button class="edit-button" style="background-color: black;" onclick="applyOffer('<%= category._id %>')">Apply offer</button>
                 </div>
               </div>
             </li>
@@ -187,6 +214,47 @@
   <script src="../assets/js/sidebarmenu.js"></script>
   <script src="../assets/js/app.min.js"></script>
   <script src="../assets/libs/simplebar/dist/simplebar.js"></script>
+  <script>
+
+
+    function applyOffer(categoryId){
+        const html = `
+                      <% offers.forEach((offer)=>{ %>
+                      <div class="coupon">
+                          <p><strong><%= offer.offerName %></strong></p>
+                          <p><%= offer.discountPercentage  %>%<span>Discount</span></p>
+                          <button class="btn btn-dark btn-sm" onclick="selectOffer('${categoryId}','<%= offer._id %>')">APPLY</button>
+                      </div>
+                      <% }) %>
+                     `
+              // Show a SweetAlert when the checkbox is checked
+              Swal.fire({
+    html:html,
+    showCloseButton: true,
+    showConfirmButton: false
+  
+  });
+  
+  
+   
+      }
+  
+      function selectOffer(categoryId,offerId) {
+      fetch('/admin/addCategoryOffer',{
+        method:"POST",
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({categoryId,offerId})
+      })
+    }
+  
+    function removeOffer(categoryId){
+      fetch('/admin/removeCategoryOffer',{
+        method:"POST",
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({categoryId})
+      })
+    }
+    </script>
 </body>
 
 </html>

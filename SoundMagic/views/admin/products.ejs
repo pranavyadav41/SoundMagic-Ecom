@@ -6,8 +6,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Modernize Free</title>
   <link rel="shortcut icon" type="image/png" href="../assets/images/logos/favicon.png" />
+  
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap"
+    rel="stylesheet">
+
   <link rel="stylesheet" href="../assets/css/styles.min.css" />
   <link rel="stylesheet" href="/adminCss/products.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2"></script>
+  <style>
+       .coupon-container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .coupon {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+            text-align: left;
+        }
+
+        .coupon strong {
+            color: #333;
+        }
+        .card {
+          margin: 20px;
+        }
+  </style>
  
  
 </head>
@@ -168,8 +199,8 @@
             <tr>
               <th>Image</th>
               <th>Product Name</th>
-              <th>Actual Price</th>
-              <th>Offer Price</th> 
+              <th>Price</th>
+              <th>Offer</th> 
               <th>Description</th>
               <th>Stock</th>
               <th>Category</th>
@@ -183,11 +214,13 @@
                   <% product.image.forEach((imagePath, index) => { %>
                     <img src="/productImages/<%= imagePath %>" alt="Product Image" width="50">
                   <% }); %>
+                  <div class="selected-offer mt-2" data-id="<%= product._id %>"></div>
+                  <button class="btn btn btn-sm" onclick="removeOffer('<%= product._id %>')" style="background-color: red; color:white;">remove</button>
                 </td>
                 <td><%= product.productName %></td>
-                <td>₹<%= product.actualPrice %></td>
                 <td>₹<%= product.offerPrice %></td>
-                <td><%= product.description %></td>
+                <td>None</td>
+                <td><%= product.description %></td> 
                 <td><%= product.stock %></td>
                 <td><%= product.category.name %></td>
                 <td>
@@ -196,6 +229,7 @@
                     <button class="action-button">Edit</button>
                     </form>
                     <button class="unlist-button" data-product-id ="<%= product._id %>" data-state="<%= product.is_listed ? 'true' : 'false' %>" ><%= product.is_listed ? 'Unlist' : 'List' %></button>
+                    <button  class="btn btn-dark" onclick="applyOffer('<%= product._id %>')"  data-toggle="modal" data-target="#exampleModalCenter" >Apply Offer</button>
                   </div>
                 </td>
               </tr>
@@ -217,14 +251,62 @@
 
       </nav> 
     </div> 
+
+    
   
     
   <script src="/adminScript/products.js"></script>
-  <script src="../assets/libs/jquery/dist/jquery.min.js"></script>
-  <script src="../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../assets/js/sidebarmenu.js"></script>
-  <script src="../assets/js/app.min.js"></script>
-  <script src="../assets/libs/simplebar/dist/simplebar.js"></script>
+  <script src="/assets/libs/jquery/dist/jquery.min.js"></script>
+  <script src="/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/js/sidebarmenu.js"></script>
+  <script src="/assets/js/app.min.js"></script>
+  <script src="/assets/libs/simplebar/dist/simplebar.js"></script>
+  <script>
+
+
+  function applyOffer(productId){
+  console.log(productId); 
+      const html = `
+                    <% offers.forEach((offer)=>{ %>
+                    <div class="coupon">
+                        <p><strong><%= offer.offerName %></strong></p>
+                        <p><%= offer.discountPercentage  %>%<span>Discount</span></p>
+                        <button class="btn btn-dark btn-sm" onclick="selectOffer('${productId}','<%= offer._id %>')">APPLY</button>
+                    </div>
+                    <% }) %>
+                   `
+            // Show a SweetAlert when the checkbox is checked
+            Swal.fire({
+  html:html,
+  showCloseButton: true,
+  showConfirmButton: false
+
+});
+
+
+ 
+    }
+
+    function selectOffer(productId,offerId) {
+  console.log(productId,offerId);
+    const offerDisplay = document.querySelector(`[data-id="${productId}"].selected-offer`);
+    console.log(offerDisplay);
+    offerDisplay.innerHTML = `<p><strong>Selected Offer:</strong> ${offerId}</p>`;
+    fetch('/admin/addProductOffer',{
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({productId,offerId})
+    })
+  }
+
+  function removeOffer(productId){
+    fetch('/admin/removeProductOffer',{
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({productId})
+    })
+  }
+  </script>
 </body>
 
 </html>
