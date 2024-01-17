@@ -8,7 +8,7 @@ const loadCategories = async(req,res)=>{
     try {
 
         const offers = await Offer.find({});
-        const categories = await Category.find();
+        const categories = await Category.find().populate({path:'offer'});
         res.render('categories', { categories,offers});
     } catch (error) {
         console.log(error.message);
@@ -119,9 +119,8 @@ const unlistCategory = async(req,res)=>{
 
 }
 
-const addCategoryOffer = async(req,res)=>{
+const   addCategoryOffer = async(req,res)=>{
     try {
-        console.log(req.body)
 
         const products = await Product.find({category:req.body.categoryId})
         
@@ -129,17 +128,23 @@ const addCategoryOffer = async(req,res)=>{
        
         const discount = offer[0].discountPercentage
 
+        const category = await Category.findOneAndUpdate({_id:req.body.categoryId},{$set:{'offer.offerApplied':true,'offer.offerName':offer[0].offerName}});
+
         for (const product of products) {
 
             let actualPrice = product.offerPrice;
 
             let categoryOffer = Math.round(actualPrice*discount/100);
 
-             product.categoryOffer = categoryOffer;
+             product.categoryOffer.amount= categoryOffer;
+             product.categoryOffer.offerApplied= true;
+             product.categoryOffer.offerName= offer[0].offerName;
+
+             product.categoryOffer.offerPercentage =offer[0].discountPercentage;
 
              await product.save();
 
-            const totalOffer = actualPrice-(categoryOffer+product.productOffer)
+            const totalOffer = actualPrice-(categoryOffer+product.productOffer.amount)
     
             product.totalOfferPrice = totalOffer;
 
@@ -149,6 +154,8 @@ const addCategoryOffer = async(req,res)=>{
 
 
          }
+
+        res.json({success:true})
 
 
 
@@ -164,8 +171,39 @@ const addCategoryOffer = async(req,res)=>{
 
 const removeCategoryOffer = async(req,res)=>{
     try {
+        
+       
 
-        console.log(req.body);
+        const products = await Product.find({category:req.body.categoryId})
+
+        const update = await Category.findOneAndUpdate({_id:req.body.categoryId},{$set:{'offer.offerApplied':false,'offer.offerName':null}})
+
+        
+
+        for (const product of products) {
+            
+            
+        const categoryOffer = product.categoryOffer.amount
+
+        product.totalOfferPrice = product.totalOfferPrice+categoryOffer;
+
+        product.categoryOffer.offerApplied = false;
+
+        product.categoryOffer.offerName = null;
+
+        product.categoryOffer.offerPercentage = null;
+
+        await product.save();
+
+      
+        product.categoryOffer.amount = 0;
+
+        await product.save();
+
+        }
+
+        res.json({success:true})
+
         
     } catch (error) {
 

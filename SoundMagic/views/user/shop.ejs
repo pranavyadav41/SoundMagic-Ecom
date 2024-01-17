@@ -86,7 +86,7 @@
             <div class="row">
                 <div class="col-lg-3 col-md-3">
                     <div class="header__logo p-0 mt-4">
-                        <a href="./index.html"><img src="../assets/images/logos/download.png" width="180" alt="" /></a>
+                        <a href="./index.html"><img src="/assets/images/logos/download.png" width="180" alt="" /></a>
                     </div>
                 </div>
                 <div class="col-lg-6 col-md-6">
@@ -102,8 +102,13 @@
                 <div class="col-lg-3 col-md-3">
                     <div class="header__nav__option">
                         <a href="#" class="search-switch"><img src="img/icon/search.png" alt=""></a>
-                        <a href="#"><img src="img/icon/heart.png" alt=""></a>
-                        <a href="/cart" class="cart-count"><img src="img/icon/cart.png" alt=""><span><%= cart[0].items.length %></span></a>
+                        <a href="/wishlist"><img src="img/icon/heart.png" alt=""></a>
+                        <% if(cart==null){ %>
+                        <a href="/cart" class="cart-count"><img src="img/icon/cart.png" alt=""><span></span></a>
+                        <% }else{ %>
+                            <a href="/cart" class="cart-count"><img src="img/icon/cart.png" alt=""><span><%= cart.items.length %></span></a>
+
+                            <% } %>
                         <a href="/user-profile"><img src="img/icon/user.png" alt=""></a>
                     </div>
                 </div>
@@ -176,12 +181,11 @@
                                 </div>
                             </div>
                             <div class="col-lg-6 col-md-6 col-sm-6">
-                                <div class="shop__product__option__right">
+                                <div class="shop__product__option__right" >
                                     <p>Sort by Price:</p>
-                                    <select id="priceSort">
-                                        <option value="asc">Low To High</option>
-                                        <option value="0-55">&#8377;200 - &#8377;1000</option>
-                                        <option value="55-100">&#8377;1500 - &#8377;3000</option>
+                                    <select id="tingu" onchange="redirectToSelected()">
+                                        <option value="/shop?sort=asc">Low To High</option>
+                                        <option value="/shop?sort=desc">High To Low</option>
                                     </select>
                                 </div>
                             </div>
@@ -194,7 +198,22 @@
                                     <div class="product__item__pic set-bg">
                                         <a href="/productDetail?id=<%= product._id %>">
                                             <img  src="/productImages/<%= product.image[0] %>" style="height:262.5pxp; width:260px;" alt=""> 
-                                        </a>    
+                                        </a>
+                                        <% if(product.productOffer.offerApplied==true){ %>
+                                    <span class="label" style="background-color: black; color:white;"><%= product.productOffer.offerPercentage %>% OFF</span>  
+
+                                        <% }
+                                        if(product.categoryOffer.offerApplied==true){ %>
+
+                                            <span class="label" style="background-color: black; color:white;"><%= product.categoryOffer.offerPercentage %>% OFF</span>
+
+
+                                            <% }
+                                            if(product.productOffer.offerApplied==true && product.categoryOffer.offerApplied==true ){ %>
+
+                                                <span class="label" style="background-color: black; color:white;"><%= product.productOffer.offerPercentage+product.categoryOffer.offerPercentage %>% OFF</span>
+
+                                                <% } %>
                                         <ul class="product__hover">
                                             <li><a href="" onclick="addToWish('<%= product._id %>')"><img src="img/icon/heart.png" alt=""></a></li>
                                         </ul>
@@ -204,7 +223,15 @@
                                     <div class="product__item__text">
                                         <h6><%= product.productName %></h6>
                                         <a href="" onclick="addToCart('<%= product._id %>')" class="add-cart">+ Add To Cart</a>
-                                        <h5>₹ <%= product.actualPrice %></h5>
+                                        <% if(product.productOffer.offerApplied==true || product.categoryOffer.offerApplied==true){ %>
+
+                                            <h5><span style="font-weight: lighter;"><strike>₹ <%= product.offerPrice %></strike></span> ₹ <%= product.totalOfferPrice %></h5>
+
+                                            <% }else{ %>
+
+                                        <h5>₹ <%= product.offerPrice %></h5>
+
+                                           <% } %>
                                     </div>
                                     <% }else{ %>
                                         <div class="product__item__text">
@@ -248,72 +275,58 @@
     </section>
     <!-- Shop Section End -->
 
-    <!-- Footer Section Begin -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3 col-md-6 col-sm-6">
-                    <div class="footer__about">
-                        <div class="footer__logo">
-                            <a href="#"><img src="../assets/images/logos/soundMagic logo.png" alt=""></a>
-                        </div>
-                        <p>The customer is at the heart of our unique business model, which includes design.</p>
-                        <a href="#"><img src="img/payment.png" alt=""></a>
+  <!-- Footer Section Begin -->
+  <footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="footer__about">
+                    <div class="footer__logo">
+                        <a href="#"><img src="/assets/images/logos/download.png" alt=""></a>
                     </div>
-                </div>
-                <div class="col-lg-2 offset-lg-1 col-md-3 col-sm-6">
-                    <div class="footer__widget">
-                        <h6>Shopping</h6>
-                        <ul>
-                            <li><a href="#">Clothing Store</a></li>
-                            <li><a href="#">Trending Shoes</a></li>
-                            <li><a href="#">Accessories</a></li>
-                            <li><a href="#">Sale</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-3 col-sm-6">
-                    <div class="footer__widget">
-                        <h6>Shopping</h6>
-                        <ul>
-                            <li><a href="#">Contact Us</a></li>
-                            <li><a href="#">Payment Methods</a></li>
-                            <li><a href="#">Delivary</a></li>
-                            <li><a href="#">Return & Exchanges</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-lg-3 offset-lg-1 col-md-6 col-sm-6">
-                    <div class="footer__widget">
-                        <h6>NewLetter</h6>
-                        <div class="footer__newslatter">
-                            <p>Be the first to know about new arrivals, look books, sales & promos!</p>
-                            <form action="#">
-                                <input type="text" placeholder="Your email">
-                                <button type="submit"><span class="icon_mail_alt"></span></button>
-                            </form>
-                        </div>
-                    </div>
+                    <p>The customer is at the heart of our unique business model, which includes design.</p>
+                    <a href="#"><img src="img/payment.png" alt=""></a>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-lg-12 text-center">
-                    <div class="footer__copyright__text">
-                        <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                        <p>Copyright ©
-                            <script>
-                                document.write(new Date().getFullYear());
-                            </script>2020
-                            All rights reserved | This template is made with <i class="fa fa-heart-o"
-                            aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
-                        </p>
-                        <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+            <div class="col-lg-2 offset-lg-1 col-md-3 col-sm-6">
+                <div class="footer__widget">
+                    <h6>SHOP NOw</h6>
+                    <ul>
+                        <li><a href="#">Speakers</a></li>
+                        <li><a href="#">Soundbars</a></li>
+                        <li><a href="#">wired headphones</a></li>
+                        <li><a href="#">Wireless headphones</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-6">
+                <div class="footer__widget">
+                    <h6>CONTACT US</h6>
+                    <ul>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Payment Methods</a></li>
+                        <li><a href="#">Delivary</a></li>
+                        <li><a href="#">Return & Exchanges</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-3 offset-lg-1 col-md-6 col-sm-6">
+                <div class="footer__widget">
+                    <h6>NewLetter</h6>
+                    <div class="footer__newslatter">
+                        <p>Be the first to know about new arrivals, look books, sales & promos!</p>
+                        <form action="#">
+                            <input type="text" placeholder="Your email">
+                            <button type="submit"><span class="icon_mail_alt"></span></button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
-    </footer>
-    <!-- Footer Section End -->
+       
+    </div>
+</footer>
+<!-- Footer Section End -->
 
     <!-- Search Begin -->
     <div class="search-model">
@@ -446,21 +459,14 @@ function addToWish(productId) {
 }
 </script>
 <script>
-    document.getElementById('priceSort').addEventListener('change', function () {
-        console.log("HIIII");
-      const selectedOption = this.value;
-      const url = `/shop?search=${encodeURIComponent(search)}&id=${encodeURIComponent(categoryId)}&sort=${encodeURIComponent(selectedOption)}`;
-  
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
-          console.log(data);
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
-        });
-    });
+    function redirectToSelected() {
+        var selectElement = document.getElementById("tingu");
+        var selectedValue = selectElement.options[selectElement.selectedIndex].value;
+        window.location.href = selectedValue;
+    }
+
   </script>
+
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/jquery.nice-select.min.js"></script>

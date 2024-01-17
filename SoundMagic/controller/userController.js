@@ -12,6 +12,7 @@ const Return = require("../model/returnModel")
 const Address = require("../model/addressModel")
 const Order = require("../model/orderModel")
 const Razorpay = require("razorpay")
+const PDFDocument = require('pdfkit');
 const Coupon = require("../model/couponModel")
 const Wallet = require("../model/walletModel")
 const Wishlist = require("../model/wishlistModel")
@@ -35,6 +36,7 @@ const userIsBlocked = async(req,res)=>{
 
 //hashing password
 const bcrypt = require("bcrypt");
+const { getMaxListeners } = require("events");
 const securePassword = async (password) => {
   try {
     const passwordHash = await bcrypt.hash(password, 10);
@@ -57,6 +59,7 @@ function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000);
 }
 
+
 //Generate a random order id
 function generateRandomOrderId() {
   const timestamp = new Date().getTime().toString();
@@ -69,13 +72,33 @@ function generateRandomOrderId() {
 
 const insertUser = async (req, res) => {
   try {
+    function addRandomSuffixToEmail(email) {
+      // Generate a random 4-character string
+      const randomSuffix = Array.from({ length: 4 }, () =>
+        String.fromCharCode(Math.floor(Math.random() * 62) + 48)
+      ).join('');
+    
+      // Add the random suffix to the email
+      const modifiedEmail = email + randomSuffix;
+    
+      return modifiedEmail;
+    }
     const existUser = await User.findOne({email:req.body.email});
     if(existUser){
      res.render('userSignup',{message:"Email already exist!"});
      return false;
     }
     const spassword = await securePassword(req.body.password);
-    const user = new User({
+    let user;
+    if(req.query.referralCode){
+
+      const email = req.query.referralCode.substring(0, req.query.referralCode.length - 4);
+      
+
+       let userdetail = await User.findOne({email:email});
+      
+
+    user = new User({
       firstname: req.body.firstname,
       lastname: req.body.lastname,
       mobile: req.body.mno,
@@ -83,15 +106,30 @@ const insertUser = async (req, res) => {
       password: spassword,
       isBlocked: 0,
       isAdmin: 0,
+      referral:addRandomSuffixToEmail(req.body.email),
+      referredBy:userdetail._id,
     });
+  }else{
+
+    user = new User({
+      firstname: req.body.firstname,
+      lastname: req.body.lastname, 
+      mobile: req.body.mno,
+      email: req.body.email,
+      password: spassword,
+      isBlocked: 0,
+      isAdmin: 0,
+      referral:addRandomSuffixToEmail(req.body.email),
+      refferedBy:""
+    });
+
+  }
     const userData = await user.save();
 
     if (userData) {
       const otp = generateOTP();
-      console.log(otp);
       req.session.name = req.body.firstname;
       req.session.otp = otp;
-      console.log(req.session.otp);
       req.session.email = req.body.email;
 
       await sendMail(otp, req.body.email, req.body.firstname);
@@ -109,6 +147,7 @@ const insertUser = async (req, res) => {
 //Load otp page
 const loadOtp = async (req, res) => {
   try {
+    console.log(req.session.otp);
     res.render("verifyOtp");
   } catch (error) {
     console.log(error.message);
@@ -131,7 +170,71 @@ const verifyOtp = async (req, res) => {
         { email: req.session.email },
         { $set: { isVerified: true } }
       );
+
+      console.log(user,"1");
+
+      const userdetail = await User.find({email:req.session.email});
+
+      if(userdetail[0].referredBy !== null){
+
+        //////CREDITING MONEY TO REFERRED USER/////////
+        let referredUserWallet =await Wallet.findOne({userId:userdetail[0].referredBy})
+        try {
+          if (!referredUserWallet) {
+              console.log("Wallet not found");
+      
+              referredUserWallet = new Wallet({
+                  userId: userdetail[0].referredBy,
+                  balance: 200,
+                  history: [{
+                      type: "Credit",
+                      amount: 200,
+                  }]
+              });
+      
+              await referredUserWallet.save();
+          } else {
+              console.log("Wallet found");
+      
+              referredUserWallet.history.push({
+                  type: "Credit",
+                  amount: 200,
+              });
+      
+              referredUserWallet.balance = referredUserWallet.history.reduce((total, transaction) => {
+                  return total + (transaction.type === "Credit" ? transaction.amount : -transaction.amount);
+              }, 0);
+      
+              await referredUserWallet.save();
+          }
+      } catch (error) {
+          console.error("Error processing referred user wallet:", error);
+      }
+      ////////////////////////////////////////////////
+       ////////////////////////////////////////////////
+////////CREDITING TO USER WALLET////////////////////////
+
+let userEmail = userdetail[0].referral.substring(0, userdetail[0].referral.length - 4)
+
+
+let customer = await User.find({email:userEmail});
+let newWallet = new Wallet({
+
+  userId: customer[0]._id,
+  balance:100,
+  history:[{type:"Credit",
+  amount:100,
+  }]
+
+
+
+})
+   
+ await newWallet.save();
+
+}
       req.session.isVerified = 1;
+
       res.redirect("/login");
     } else {
       res.render("verifyOtp", { message: "Invalid OTP.Please try again." });
@@ -208,8 +311,9 @@ const loadHome = async (req, res) => {
   try {
     const products = await Product.find({ is_listed: true });
     const banners = await Banner.find({isListed:true})
+    const cart = await Cart.findOne({userId:req.session.userid});
 
-    res.render("index",{products,banners});
+    res.render("index",{products,banners,cart});
 
   } catch (error) {
     console.log(error.message); 
@@ -230,22 +334,34 @@ const loadShop = async (req, res) => {
 
 
     const limit = 6;
+    let sortOption = 'asc';
+    if (req.query.sort) {
+      sortOption = req.query.sort.toLowerCase(); 
+    }
+
+    let sortDirection = 1;
+    if (sortOption === 'desc') {
+      sortDirection = -1; 
+    }
+
+    let sortCriteria = { offerPrice: sortDirection }; 
 
 
     if (req.query.id) {
       
       const id = req.query.id;
       const category = await Category.find({ isListed: true });
-      const products = await Product.find({ is_listed: true,category:id,productName: { $regex: '.*'+search+'.*',$options:'i'} }).limit(limit*1).skip((page-1)*limit).exec() 
+      const products = await Product.find({ is_listed: true,category:id,productName: { $regex: '.*'+search+'.*',$options:'i'} }).sort(sortCriteria).limit(limit*1).skip((page-1)*limit).exec() 
       const count = await Product.find({ is_listed: true,category:id,productName: { $regex: '.*'+search+'.*',$options:'i'} }).countDocuments();
+      const cart = await Cart.findOne({userId:req.session.userid});
       let totalPages=Math.ceil(count/limit)
       let previous = (page > 1) ? page - 1 : 1;
       let next = (page < totalPages) ? page + 1 : totalPages; 
-      res.render("shop", { category, products,totalPages,currentPage:page,previous,next});
+      res.render("shop", { category, products,totalPages,currentPage:page,previous,next,cart});
     } else {
-      const products = await Product.find({ is_listed: true,productName: { $regex: '.*'+search+'.*',$options:'i'} }).limit(limit*1).skip((page-1)*limit).exec()
+      const products = await Product.find({ is_listed: true,productName: { $regex: '.*'+search+'.*',$options:'i'} }).sort(sortCriteria).limit(limit*1).skip((page-1)*limit).exec()
       const count = await Product.find({ is_listed: true,productName: { $regex: '.*'+search+'.*',$options:'i'} }).countDocuments();
-      const cart = await Cart.find();
+      const cart = await Cart.findOne({userId:req.session.userid});
       let totalPages=Math.ceil(count/limit)
       let previous = (page > 1) ? page - 1 : 1;
       let next = (page < totalPages) ? page + 1 : totalPages;
@@ -263,7 +379,8 @@ const productDetail = async (req, res) => {
   try {
     const id = req.query.id;
     const product = await Product.findById({ _id: id });
-    res.render("productDetail", { product: product });
+    const cart = await Cart.findOne({userId:req.session.userid});
+    res.render("productDetail", { product: product ,cart});
   } catch (error) {
     console.log(error.message);
   }
@@ -301,7 +418,8 @@ const loadProfile = async (req, res) => {
     const userid = req.session.userid;
     const user = await User.findById(userid);
     const address = await Address.find({userId:userid})
-    res.render("profile", { user,address });
+    const cart = await Cart.findOne({userId:req.session.userid})
+    res.render("profile", { user,address,cart });
   } catch (error) {
     console.log(error.message);
   }
@@ -503,10 +621,10 @@ const deleteAddress =async(req,res)=>{
 const myWallet = async(req,res)=>{
   try {
 
-    const wallet = await Wallet.find();
-    console.log(wallet);
+    const wallet = await Wallet.find({userId:req.session.userid});
+    const cart = await Cart.findOne({userId:req.session.userid})
 
-    res.render('myWallet',{wallet})
+    res.render('myWallet',{wallet,cart})
     
   } catch (error) {
     console.log(error.message);
@@ -576,7 +694,13 @@ const loadCheckout = async(req,res)=>{
     ////CALCULATING SUBTOTAL////////////
     let subtotal = 0;
     cart[0].items.forEach(item=>{
-      subtotal +=item.productId.offerPrice * item.quantity
+      if(item.productId.productOffer.offerApplied==true||item.productId.categoryOffer.offerApplied==true){
+      subtotal +=item.productId.totalOfferPrice * item.quantity
+      }else{
+
+        subtotal +=item.productId.offerPrice * item.quantity
+
+      }
     })
     ////////////////////////////////////
     const address = await Address.find({userId:userid})
@@ -642,12 +766,25 @@ const placeOrder = async(req,res)=>{
     }
     res.json({success:true})
   }else if(paymentMethod==="Online payment"){
+    let  options;
+    if(discountPrice>0){
+    
 
-    var options = {
-      amount: subtotal,  // amount in the smallest currency unit
+      options = {
+      amount: discountPrice*100,  // amount in the smallest currency unit
       currency: "INR",
       receipt:userId,
     };
+  }else{
+    
+    options = {
+      amount: subtotal*100,  // amount in the smallest currency unit
+      currency: "INR",
+      receipt:userId,
+    };
+
+  }
+
     instance.orders.create(options, function(err, order) {
       if(err){
 
@@ -761,23 +898,28 @@ const paymentVerify = async(req,res)=>{
     let hmac = crypto.createHmac('sha256',process.env.KEY_SECRET)
     hmac.update(req.body.payment.razorpay_order_id+'|'+req.body.payment.razorpay_payment_id);
     hmac = hmac.digest('hex');
-    const date = new Date();
-  
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
-    let year = date.getFullYear();  
-    let currentDate = `${day}-${month}-${year}`;
 
     if(hmac===req.body.payment.razorpay_signature){
       console.log("Payment successfull");
      const userid = req.body.order.receipt;
      const addressId = req.body.options.notes.address;
      const discountAmount = req.body.options.notes.discount;
-     const subtotal = req.body.order.amount;
      const paymentMethod = "Online payment";
      const address = await Address.find({_id:addressId}).populate('address')
-     const cart = await Cart.find({userId:userid})
+     const cart = await Cart.find({userId:userid}).populate("items.productId")
      const products = cart[0].items;
+     ////CALCULATING SUBTOTAL////////////
+    let subtotal = 0;
+    cart[0].items.forEach(item=>{
+      if(item.productId.productOffer.offerApplied==true||item.productId.categoryOffer.offerApplied==true){
+      subtotal +=item.productId.totalOfferPrice * item.quantity
+      }else{
+
+        subtotal +=item.productId.offerPrice * item.quantity
+
+      }
+    })
+    ////////////////////////////////////
      const orderId = generateRandomOrderId();
      
     const userOrder = new Order({
@@ -844,6 +986,8 @@ const loadOrders = async(req,res)=>{
 
     }
   }
+
+  console.log(totalDiscountPerProduct);
 
     res.render('myOrders',{orders,totalDiscountPerProduct})
 
@@ -916,8 +1060,17 @@ const cancelOrder = async(req,res)=>{
         if(discountAmount>0){
         const totalOffer = totalAmount-discountAmount;
         const offerperProduct = totalOffer/order.products.length;
+
+        let walletAmount;
+
+        if(product[0].productOffer.offerApplied==true|| product[0].categoryOffer.offerApplied==true){
   
-        const walletAmount = product[0].offerPrice*targetProduct.quantity - offerperProduct;
+         walletAmount = product[0].totalOfferPrice*targetProduct.quantity - offerperProduct;
+
+        }else{
+
+         walletAmount = product[0].offerPrice*targetProduct.quantity - offerperProduct;
+        }
 
        let wallet = await Wallet.findOne({userId:req.session.userid})
 
@@ -951,7 +1104,18 @@ const cancelOrder = async(req,res)=>{
       }
   
         }else{
-          const walletAmount = product[0].offerPrice*targetProduct.quantity;
+
+
+        let walletAmount;
+
+        if(product[0].productOffer.offerApplied==true|| product[0].categoryOffer.offerApplied==true){
+  
+         walletAmount = product[0].totalOfferPrice*targetProduct.quantity ;
+
+        }else{
+
+         walletAmount = product[0].offerPrice*targetProduct.quantity;
+        }
           let wallet = await Wallet.findOne({userId:req.session.userid})
 
           if(!wallet){
@@ -997,7 +1161,16 @@ const cancelOrder = async(req,res)=>{
         const totalOffer = totalAmount-discountAmount;
         const offerperProduct = totalOffer/order.products.length;
   
-        const walletAmount = product[0].offerPrice*targetProduct.quantity - offerperProduct;
+        let walletAmount;
+
+        if(product[0].productOffer.offerApplied==true|| product[0].categoryOffer.offerApplied==true){
+  
+         walletAmount = product[0].totalOfferPrice*targetProduct.quantity - offerperProduct;
+
+        }else{
+
+         walletAmount = product[0].offerPrice*targetProduct.quantity - offerperProduct;
+        }
 
        let wallet = await Wallet.findOne({userId:req.session.userid})
 
@@ -1031,7 +1204,16 @@ const cancelOrder = async(req,res)=>{
       }
   
         }else{
-          const walletAmount = product[0].offerPrice*targetProduct.quantity;
+          let walletAmount;
+
+          if(product[0].productOffer.offerApplied==true|| product[0].categoryOffer.offerApplied==true){
+    
+           walletAmount = product[0].totalOfferPrice*targetProduct.quantity;
+  
+          }else{
+  
+           walletAmount = product[0].offerPrice*targetProduct.quantity;
+          }
           let wallet = await Wallet.findOne({userId:req.session.userid})
 
           if(!wallet){
@@ -1115,17 +1297,17 @@ const returnOrder = async(req,res)=>{
 
       const totalAmount = order.totalAmount;
       const discountAmount = order.discountedPrice;
-      const date = new Date();
 
-      let day = date.getDate();
-      let month = date.getMonth() + 1;
-      let year = date.getFullYear();  
-      let currentDate = `${day}-${month}-${year}`;
       if(discountAmount>0){
       const totalOffer = totalAmount-discountAmount;
       const offerperProduct = totalOffer/order.products.length;
 
-      const walletAmount = product[0].offerPrice*targetProduct.quantity - offerperProduct;
+      let walletAmount;
+      if(product[0].productOffer.offerApplied==true|| product[0].categoryOffer.offerApplied==true){
+      walletAmount = product[0].totalOfferPrice *targetProduct.quantity-offerperProduct;
+      }else{   
+      walletAmount = product[0].offerPrice*targetProduct.quantity - offerperProduct;
+      }
       let wallet = await Wallet.findOne({userId:req.session.userid})
 
       if(!wallet){
@@ -1155,9 +1337,21 @@ const returnOrder = async(req,res)=>{
     }, 0);
        await wallet.save();
      }
-
+ 
       }else{
-        const walletAmount = product[0].offerPrice*targetProduct.quantity;
+        let walletAmount;
+        if(product[0].productOffer.offerApplied==true|| product[0].categoryOffer.offerApplied==true){
+
+          walletAmount = product[0].totalOfferPrice*targetProduct.quantity;
+
+
+        }else{
+
+          walletAmount = product[0].offerPrice*targetProduct.quantity;
+
+        }
+
+        
         let wallet = await Wallet.findOne({userId:req.session.userid})
 
         if(!wallet){
@@ -1207,8 +1401,9 @@ const loadWishlist = async(req,res)=>{
   try {
 
     const wishlist = await Wishlist.find().populate({path:"products.productId"})
+    const cart = await Cart.findOne({userId:req.session.userid})
 
-    res.render('wishlist',{wishlist});
+    res.render('wishlist',{wishlist,cart});
 
 
     
@@ -1278,6 +1473,100 @@ const removeWish  = async(req,res)=>{
     console.log(error.message);
   }
 }
+
+const downloadInvoice = async(req,res)=>{
+  try {
+
+    const orderId =req.body.orderId
+    const quantity =req.body.quantity
+    const productId = req.body.productId
+
+    const order = await Order.findOne({_id:orderId});
+    const product = await Product.findOne({_id:productId})
+
+    let totalDiscountPerProduct = 0;
+
+    
+    const totalAmount = order.totalAmount;
+
+    const discountPrice = order.discountedPrice;
+
+   
+
+    if(discountPrice>0){
+
+    const totalDiscount = totalAmount-discountPrice;
+
+    totalDiscountPerProduct = totalDiscount / order.products.length;
+
+    }
+
+    console.log(order);
+    console.log(product);
+
+
+     // Create a PDF document
+  const pdfDoc = new PDFDocument();
+  res.setHeader('Content-Disposition', `attachment; filename=invoice_${order.orderId}.pdf`);
+  res.setHeader('Content-Type', 'application/pdf');
+  pdfDoc.pipe(res);
+
+ 
+  // Add company details
+  pdfDoc.fontSize(12).text('SoundMagic & Co', { align: 'center' });
+  pdfDoc.fontSize(10).text('Magic Main Street, Magic City, India', { align: 'center' });
+  pdfDoc.fontSize(10).text('Phone: +1 123 456 7890 | Email: soundmagic@example.com', { align: 'center' });
+  pdfDoc.moveDown();
+
+  // Add customer details
+  pdfDoc.fontSize(12).text(`Invoice for Order #${order.orderId}`, { align: 'center' });
+  pdfDoc.moveDown();
+  pdfDoc.fontSize(10).text(`Customer: ${order.shippingAddress.fullname}`, { align: 'left' });
+  pdfDoc.fontSize(10).text(`Mobile: ${order.shippingAddress.mobile}`, { align: 'left' });
+  pdfDoc.fontSize(10).text(`Address: ${order.shippingAddress.address}`, { align: 'left' });
+  pdfDoc.fontSize(10).text(`Pincode: ${order.shippingAddress.pincode}`, { align: 'left' });
+  pdfDoc.fontSize(10).text(`City: ${order.shippingAddress.city}`, { align: 'left' });
+  pdfDoc.fontSize(10).text(`State: ${order.shippingAddress.State}`, { align: 'left' });
+  pdfDoc.moveDown();
+
+  // Add product details
+  pdfDoc.fontSize(12).text('Products:', { align: 'left' });
+  pdfDoc.moveDown();
+
+  pdfDoc.fontSize(10).text(`${product.productName} - Quantity: ${quantity}`, { align: 'left' });
+
+  if (product.productOffer.offerApplied || product.categoryOffer.offerApplied) {
+    pdfDoc.text(`Price: RS${product.totalOfferPrice.toFixed(2)}`);
+  } else {
+    pdfDoc.text(`Price: RS${product.offerPrice.toFixed(2)}`);
+  }
+
+  pdfDoc.moveDown();
+
+  // Add total
+  let totalPrice;
+  if (product.productOffer.offerApplied || product.categoryOffer.offerApplied) {
+    totalPrice = (product.totalOfferPrice * quantity - totalDiscountPerProduct).toFixed(2);
+  } else {
+    totalPrice = (product.offerPrice * quantity - totalDiscountPerProduct).toFixed(2);
+  }
+  pdfDoc.fontSize(12).text(`Total: RS${totalPrice}`, { align: 'left' });
+  pdfDoc.moveDown();
+
+  // Finalize the PDF
+  pdfDoc.end();
+
+  res.download(`invoice_${order.orderId}.pdf`);
+
+
+
+    
+  } catch (error) {
+
+    console.log(error.message);
+    
+  }
+}
 module.exports = {
   loadRegister,
   insertUser,
@@ -1316,5 +1605,6 @@ module.exports = {
   addressEdit,
   loadWishlist,
   addToWishList,
-  removeWish
+  removeWish,
+  downloadInvoice
 };

@@ -13,16 +13,18 @@
      },
 
      productOffer:{
-
-      type:Number,
-      default:0
+      offerApplied:{ type:Boolean,default:false},
+      amount:{type:Number,default:0},
+      offerName:{type:String},
+      offerPercentage:{type:Number}
 
 
      },
      categoryOffer:{
-
-      type:Number,
-      default:0
+      offerApplied:{ type:Boolean,default:false},
+      amount:{type:Number,default:0},
+      offerName:{type:String},
+      offerPercentage:{type:Number}
 
      },
 
@@ -62,3 +64,9 @@
    
    
    module.exports = mongoose.model('Product', productSchema);
+
+
+
+
+
+   

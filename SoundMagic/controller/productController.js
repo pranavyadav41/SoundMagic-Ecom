@@ -36,6 +36,8 @@ const loadProduct = async(req,res)=>{
         .skip((page-1)*limit)
         .exec() 
 
+        console.log(products);
+
         const count = await Product.find({
             productName: { $regex: '.*'+search+'.*',$options:'i'}
        }).countDocuments();
@@ -411,15 +413,16 @@ const addProductOffer = async(req,res)=>{
         const productOffer =Math.round(actualPrice*discount/100);
 
        
-        const productSave = await Product.findOneAndUpdate({_id:req.body.productId},{$set:{productOffer:productOffer}});
+        const productSave = await Product.findOneAndUpdate({_id:req.body.productId},{$set:{'productOffer.amount':productOffer,'productOffer.offerApplied':true,'productOffer.offerName':offer[0].offerName,'productOffer.offerPercentage': offer[0].discountPercentage}});
 
-        const totalOffer = actualPrice-(productOffer+product[0].categoryOffer)
+
+        const totalOffer = actualPrice-(productOffer+product[0].categoryOffer.amount)
 
         const totalSave = await Product.findOneAndUpdate({_id:req.body.productId},{$set:{totalOfferPrice:totalOffer}})
 
 
         if(totalSave){
-            console.log("success");
+            res.json({success:true})
         }
 
         
@@ -433,7 +436,15 @@ const addProductOffer = async(req,res)=>{
 const removeProductOffer = async(req,res)=>{
     try {
 
-        const product = await Product.findOneAndUpdate({_id:req.body.productId},{$set:{productOffer:0}})
+        const product = await Product.findOne({_id:req.body.productId});
+
+        const productOffer = product.productOffer.amount
+
+        const update = await Product.findOneAndUpdate({_id:req.body.productId},{$inc:{totalOfferPrice:productOffer},$set:{'productOffer.amount':0,'productOffer.offerApplied':false,'productOffer.offerName':null,'productOffer.offerPercentage':null}})
+
+        if(update){
+            res.json({success:true})
+        }
         
     } catch (error) {
 
@@ -505,6 +516,8 @@ const editCoupon = async(req,res)=>{
         const couponId = req.params.id;
         const coupon = await Coupon.find({_id:couponId})
 
+        console.log(coupon);
+
         res.render('editCoupon',{coupon});
         
     } catch (error) {
@@ -516,19 +529,7 @@ const editCoupon = async(req,res)=>{
 
 const couponEdit = async(req,res)=>{
     try {
-        const copy = await Coupon.findOne({code:req.body.coupon.couponCode});
-        if(copy){
-            console.log("copy");
-            return res.status(400).json({ error: "Coupon code already exists." });
-           
-        }
-
-        const dupli = await Coupon.findOne({couponName:req.body.coupon.couponName})
-        if(dupli){
-            console.log("duplicate");
-            return res.status(400).json({ error: "Coupon name already exists." });
-           
-        }
+        console.log(req.body);
 
         const coupon = await Coupon.findByIdAndUpdate({_id:req.body.couponId},{
             $set:{

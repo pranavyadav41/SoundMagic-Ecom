@@ -9,6 +9,8 @@ const userSchema = new mongoose.Schema({
   isVerified:{type:Boolean,default:false},
   isBlocked:{type:Boolean},
   isAdmin:{type:Boolean},
+  referral:{type:String},
+  referredBy:{ type: mongoose.Schema.Types.ObjectId, ref: 'User',default:null}
 });
 
 module.exports = mongoose.model('User',userSchema)

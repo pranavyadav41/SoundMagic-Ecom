@@ -24,6 +24,8 @@ admin_route.get('/logout',auth.isLogin,adminController.adminLogout)
 
 admin_route.get('/dashboard',auth.isLogin,adminController.loadDashboard)
 admin_route.post('/dashboard',auth.isLogin,adminController.salesReport)
+admin_route.post('/dashboard/monthly',auth.isLogin,adminController.monthlyReport)
+admin_route.post('/dashboard/yearly',auth.isLogin,adminController.yearlyReport)
 admin_route.get('/download-pdf',auth.isLogin,adminController.downloadPdf)
 admin_route.get('/download-csv',auth.isLogin,adminController.downloadCsv)
 

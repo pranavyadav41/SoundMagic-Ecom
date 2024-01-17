@@ -101,6 +101,23 @@
         .btn:hover {
             background-color: #555;
         }
+        .cart-count {
+        position: relative;
+        display: inline-block;
+    }
+
+    .cart-count span {
+        background-color: #abb56a; /* Set your desired background color */
+        color: #ffffff; /* Set your desired text color */
+        border-radius: 50%;
+        padding:5px 5px;
+        font-size: 14px; /* Set your default font size */
+        position: absolute;
+        top: -6px; /* Adjust vertical position */
+        right: -12px; /* Adjust horizontal position */
+        min-width: 20px; /* Set a minimum width */
+        text-align: center;
+    }
     </style>
     
 </head>
@@ -163,8 +180,13 @@
                 <div class="col-lg-3 col-md-3">
                     <div class="header__nav__option">
                         <a href="#" class="search-switch"><img src="/img/icon/search.png" alt=""></a>
-                        <a href="#"><img src="/img/icon/heart.png" alt=""></a>
-                        <a href="/cart"><img src="/img/icon/cart.png" alt=""></a>
+                        <a href="/wishlist"><img src="/img/icon/heart.png" alt=""></a>
+                        <% if(cart==null){ %>
+                            <a href="/cart" class="cart-count"><img src="img/icon/cart.png" alt=""><span></span></a>
+                            <% }else{ %>
+                                <a href="/cart" class="cart-count"><img src="img/icon/cart.png" alt=""><span><%= cart.items.length %></span></a>
+    
+                                <% } %>
                         <a href="/user-profile"><img src="/img/icon/user.png" alt=""></a>
                     </div>
                 </div>
@@ -191,6 +213,7 @@
         </section>
         <!-- Breadcrumb Section End -->
     <div class="wishlist">
+        <% if(wishlist[0]){ %>
         <% wishlist[0].products.forEach((product)=>{ %>
         <div class="product d-flex">
             <div class="mt-5">
@@ -198,7 +221,14 @@
         </div>
             <div class="product-info">
                 <h3><%= product.productId.productName %></h3>
+                <% if(product.productId.productOffer.offerApplied==true || product.productId.categoryOffer.offerApplied){ %>
+
+                    <p>&#8377;<%= product.productId.totalOfferPrice %></p>
+
+                    <% }else{ %>
                 <p>&#8377;<%= product.productId.offerPrice %></p>
+
+                <% } %>
                
             </div>
             <div class="product-info">
@@ -207,6 +237,11 @@
             </div>
         </div>
         <% }) %>
+        <% }else{ %>
+
+            <h3>YOUR WISHLIST IS EMPTY</h3>
+
+            <% } %>
         <!-- Add more products as needed -->
     
     </div>

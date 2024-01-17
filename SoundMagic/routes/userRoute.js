@@ -96,6 +96,10 @@ user_route.get('/wishlist',auth.isLogin,auth.isBlocked,userController.loadWishli
 user_route.post('/addToWish',auth.isLogin,auth.isBlocked,userController.addToWishList)
 user_route.post('/removeWish',auth.isLogin,auth.isBlocked,userController.removeWish)
 
+//INVOICE
+
+user_route.post('/downloadInvoice',auth.isLogin,auth.isBlocked,userController.downloadInvoice);
+
 
 
 

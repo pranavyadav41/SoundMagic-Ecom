@@ -92,6 +92,9 @@ const loadUsers = async(req,res)=>{
 
 const salesReport = async (req, res) => {
     try {
+        const pdfMake = require('pdfmake/build/pdfmake');
+        const vfsFonts = require('pdfmake/build/vfs_fonts');
+        
         const fromDate = new Date(req.body.startDate);
         const toDate = new Date(req.body.endDate);
         toDate.setHours(23, 59, 59, 999);
@@ -149,6 +152,68 @@ const salesReport = async (req, res) => {
         res.json({orders})
     } catch (error) {
         console.error('Sales report generation error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+const monthlyReport = async (req, res) => {
+    try {
+        const monthlyData = await Order.aggregate([
+            {
+                $match: {
+                    OrderDate: {
+                        $gte: new Date(new Date().getFullYear(), 0, 1), // Start of the year
+                        $lt: new Date(new Date().getFullYear() + 1, 0, 1)  // Start of the next year
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m", date: "$OrderDate" } },
+                    totalSales: { $sum: "$totalAmount" }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]);
+
+        console.log(monthlyData);
+
+        res.json({ data: monthlyData });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+const yearlyReport = async (req, res) => {
+    try {
+        const yearlyData = await Order.aggregate([
+            {
+                $match: {
+                    OrderDate: {
+                        $gte: new Date(0), // Start of your dataset
+                        $lt: new Date()     // Current date
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y", date: "$OrderDate" } },
+                    totalSales: { $sum: "$totalAmount" }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]);
+
+        console.log(yearlyData);
+
+        res.json({ data: yearlyData });
+    } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
@@ -241,5 +306,7 @@ module.exports = {
     adminLogout,
     salesReport,
     downloadCsv,
-    downloadPdf
+    downloadPdf,
+    monthlyReport,
+    yearlyReport
 }
