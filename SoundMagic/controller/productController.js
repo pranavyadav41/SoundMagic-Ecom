@@ -5,7 +5,7 @@ const Coupon = require('../model/couponModel')
 const Banner = require('../model/bannerModel')
 const Return = require('../model/returnModel')
 const moment = require('moment')
-const { findByIdAndUpdate } = require('../model/userModel')
+const User= require('../model/userModel')
 const now = moment();
 const Offer = require("../model/offerModel")
 
