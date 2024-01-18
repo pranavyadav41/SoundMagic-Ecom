@@ -1000,8 +1000,6 @@ const loadOrders = async (req, res) => {
       }
     }
 
-    console.log(totalDiscountPerProduct);
-
     res.render("myOrders", { orders, totalDiscountPerProduct });
   } catch (error) {
     console.log(error.message);

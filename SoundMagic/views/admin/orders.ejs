@@ -318,7 +318,13 @@
                 <td><%= order.OrderDate.toLocaleDateString() %></td>
                 <td><%= order.userId.firstname %></td>
                 <td>₹<%= order.paymentMethod %></td>
+                <% if(order.discountedPrice>0){ %>
+
+                  <td>₹<%= order.discountedPrice %></td>
+
+                  <% }else{ %>
                 <td>₹<%= order.totalAmount %></td>
+                <% } %>
                 <td>
                   <div class="action-buttons">
                     <a href="/admin/orderDetail/<%= order._id %>" class="btn btn-dark">Manage</a>

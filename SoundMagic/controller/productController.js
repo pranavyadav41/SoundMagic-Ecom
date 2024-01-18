@@ -233,7 +233,18 @@ const orderDetail = async(req,res)=>{
     try {
         const orderId = req.params.orderID
         const orders = await Order.findOne({_id:orderId}).populate({path:'products.productId'});
-        res.render('orderDetail',{orders})
+        let totalDiscountPerProduct = 0;
+
+        const totalAmount = orders.totalAmount;
+
+        const discountPrice = orders.discountedPrice;
+  
+        if (discountPrice > 0) {
+          const totalDiscount = totalAmount - discountPrice;
+  
+          totalDiscountPerProduct = totalDiscount / orders.products.length;
+        }
+        res.render('orderDetail',{orders,totalDiscountPerProduct})
     } catch (error) {
         console.log(error.message);
     }

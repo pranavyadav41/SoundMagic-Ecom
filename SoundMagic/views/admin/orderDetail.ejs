@@ -257,7 +257,7 @@
                     <th>NO</th>
                     <th>Image</th>
                     <th>Product Name</th>
-                    <th>Quantity</th>
+                    <th>Quantity</th> 
                     <th>Total Amount</th>
                     <th>Status</th>
                 </tr>
@@ -269,7 +269,18 @@
                     <td><img src="/productImages/<%= product.productId.image[0] %>" style="width:70px;height:70px;"></img></td>
                     <td><%= product.productId.productName %></td>
                     <td><%= product.quantity %></td>
-                    <td><%= product.productId.offerPrice* product.quantity%></td>
+                    <% if (orders.discountedPrice != 0){%>
+                      <% if(product.productId.productOffer.offerApplied==true || product.productId.categoryOffer.offerApplied==true){ %>
+                          <td>&#8377;<%= (product.productId.totalOfferPrice*product.quantity - totalDiscountPerProduct).toFixed() %></td>
+          
+                          <% }else{ %>
+                    <td>&#8377;<%= (product.productId.offerPrice*product.quantity - totalDiscountPerProduct).toFixed() %></td>
+                    <% } %>
+          
+                    <% }else{ %>
+                      <td>&#8377;<%= (product.productId.offerPrice*product.quantity - totalDiscountPerProduct).toFixed() %></td>
+          
+                      <% } %>
                     <% if(product.productOrderStatus=='Cancelled'){ %>
 
                       <td style="color:red;">Cancelled</td>

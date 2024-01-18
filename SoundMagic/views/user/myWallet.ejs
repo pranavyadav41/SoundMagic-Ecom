@@ -214,11 +214,14 @@
         </div>
     </section>
     <!-- Breadcrumb Section End -->
+    <% if(wallet[0]){ %>
+
+
     <div class="wallet-container">
         <div class="wallet-header">
             My Wallet
         </div>
-        <% if(wallet[0]){ %>
+      
       
         <div class="wallet-balance">
             Balance: &#8377;<%= wallet[0].balance %>
@@ -242,12 +245,32 @@
             <% }); %>
            
         </div>
-        <% }else{ %>
+     
 
-            <p>NO WALLET</p>
+            
 
-            <% } %>
+           
     </div>
+    <% }else{ %>
+
+        <div class="wallet-container">
+            <div class="wallet-header">
+                My Wallet
+            </div>
+          
+          
+            <div class="wallet-balance">
+                Balance: &#8377;0
+            </div>
+         
+    
+                
+    
+               
+        </div>
+
+
+        <% } %>
    
 
 
