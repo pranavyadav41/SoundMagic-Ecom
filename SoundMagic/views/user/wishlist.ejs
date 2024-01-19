@@ -213,8 +213,8 @@
         </section>
         <!-- Breadcrumb Section End -->
     <div class="wishlist">
-        <% if(wishlist[0]){ %>
-        <% wishlist[0].products.forEach((product)=>{ %>
+        <% if(wishlist){ %>
+        <% wishlist.products.forEach((product)=>{ %>
         <div class="product d-flex">
             <div class="mt-5">
             <img src="/productImages/<%= product.productId.image[0] %>" alt="Product 1" style="height:90px;width:90px;">

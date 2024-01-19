@@ -1,6 +1,8 @@
+require("dotenv").config({ path: "config/.env" });
 const mongoose = require("mongoose");
 const session = require('express-session');
-mongoose.connect("mongodb://127.0.0.1:27017/SoundMagic");
+mongoose.connect(process.env.DB_URL+"SoundMagic");
+
 const path = require("path");
 
 

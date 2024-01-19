@@ -1366,7 +1366,7 @@ const returnOrder = async (req, res) => {
 
 const loadWishlist = async (req, res) => {
   try {
-    const wishlist = await Wishlist.find().populate({
+    const wishlist = await Wishlist.findOne({userId:req.session.userid}).populate({
       path: "products.productId",
     });
     const cart = await Cart.findOne({ userId: req.session.userid });
